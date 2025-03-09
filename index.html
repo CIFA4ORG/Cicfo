@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CICFO - Collective Intelligence for Cluster Farming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        .pulse { animation: pulse 1.5s infinite ease-in-out; }
+        body { background: linear-gradient(135deg, #f0f7f4, #e0ece6); }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .input-field:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); outline: none; }
+        .btn-green { background: linear-gradient(45deg, #10b981, #34d399); }
+        .btn-green:hover { background: linear-gradient(45deg, #059669, #34d399); }
+        .btn-blue { background: linear-gradient(45deg, #2563eb, #3b82f6); }
+        .btn-blue:hover { background: linear-gradient(45deg, #1d4ed8, #2563eb); }
+        .btn-purple { background: linear-gradient(45deg, #9333ea, #a855f7); }
+        .btn-purple:hover { background: linear-gradient(45deg, #7e22ce, #9333ea); }
+        .btn-yellow { background: linear-gradient(45deg, #f59e0b, #fbbf24); }
+        .btn-yellow:hover { background: linear-gradient(45deg, #d97706, #f59e0b); }
+        canvas { border-radius: 0.75rem; border: 1px solid #e5e7eb; }
+    </style>
+</head>
+<body class="font-sans p-6 max-w-4xl mx-auto">
+    <!-- Header -->
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-green-700 mb-2 fade-in">CICFO</h1>
+        <p class="text-lg text-gray-600">Leveraging Collective Intelligence for Sustainable Cluster Farming</p>
+    </header>
+
+    <!-- Introduction -->
+    <div class="card p-6 mb-6 fade-in">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Welcome to CICFO</h2>
+        <p class="text-gray-600 mb-4">
+            CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
+        </p>
+        <p class="text-gray-600">Created by an <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank"> innovator</a> passionate about sustainable agriculture.</p>
+    </div>
+
+    <!-- Resource Mapping -->
+    <div class="card p-6 mb-6 fade-in">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Resource Mapping</h2>
+        <p class="text-gray-600 mb-2">Share and view resource availability in your cluster.</p>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="resourceInput" placeholder="Resource (e.g., Water Level)" class="p-2 border rounded-md w-full input-field">
+            <input type="number" id="quantityInput" placeholder="Quantity" min="0" class="p-2 border rounded-md w-24 input-field">
+            <button onclick="addResource()" class="btn-green text-white p-2 rounded-md pulse">Submit</button>
+        </div>
+        <div id="mapPlaceholder" class="h-64 rounded-md">
+            <canvas id="resourceChart" class="w-full h-full"></canvas>
+        </div>
+        <ul id="resourceList" class="mt-4 space-y-2"></ul>
+    </div>
+
+    <!-- Decision Dashboard -->
+    <div class="card p-6 mb-6 fade-in">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Decision Dashboard</h2>
+        <p class="text-gray-600 mb-2">Propose and vote on resource allocation plans.</p>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="proposalInput" placeholder="Proposal (e.g., Prioritize water for maize)" class="p-2 border rounded-md w-full input-field">
+            <button onclick="proposePlan()" class="btn-blue text-white p-2 rounded-md pulse">Propose</button>
+        </div>
+        <div id="voteSection" class="space-y-2"></div>
+        <button onclick="viewResults()" class="btn-purple text-white p-2 rounded-md hover:bg-purple-700 mt-4 pulse">View Results</button>
+        <div id="resultsSection" class="mt-4 hidden">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Voting Results</h3>
+            <canvas id="voteChart" class="h-64 w-full"></canvas>
+        </div>
+    </div>
+
+    <!-- Knowledge Hub -->
+    <div class="card p-6 mb-6 fade-in">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Knowledge Hub</h2>
+        <p class="text-gray-600 mb-2">Share and learn sustainable farming practices.</p>
+        <textarea id="knowledgeInput" placeholder="Share a tip or story..." class="p-2 border rounded-md w-full mb-2 input-field"></textarea>
+        <button onclick="postKnowledge()" class="btn-yellow text-white p-2 rounded-md pulse">Post</button>
+        <div id="knowledgeFeed" class="mt-4 space-y-2"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-600 mt-8">
+        <p>© 2025 CICFO | Built for a sustainable future</p>
+    </footer>
+
+    <script>
+        // State Management
+        let resources = [];
+        let proposals = [];
+        let votes = {};
+        let knowledgePosts = [];
+        let resourceChart = null;
+        let voteChart = null;
+
+        // Initialize Resource Chart
+        const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+        resourceChart = new Chart(resourceCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Resource Quantity',
+                    data: [],
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } },
+                plugins: { legend: { labels: { color: '#1f2937' } } },
+                animation: { duration: 1000, easing: 'easeInOutQuad' }
+            }
+        });
+
+        // Add Resource
+        function addResource() {
+            const resourceInput = document.getElementById('resourceInput');
+            const quantityInput = document.getElementById('quantityInput');
+            const resource = resourceInput.value.trim();
+            const quantity = parseInt(quantityInput.value);
+
+            if (resource && !isNaN(quantity) && quantity >= 0) {
+                resources.push({ resource, quantity });
+                updateResourceList();
+                updateResourceChart();
+                resourceInput.value = '';
+                quantityInput.value = '';
+            } else {
+                alert('Please enter a valid resource and quantity.');
+            }
+        }
+
+        function updateResourceList() {
+            const resourceList = document.getElementById('resourceList');
+            resourceList.innerHTML = resources.map(r => `
+                <li class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    ${r.resource}: ${r.quantity} <span class="text-green-500"><i class="fas fa-check"></i></span>
+                </li>
+            `).join('');
+        }
+
+        function updateResourceChart() {
+            resourceChart.data.labels = resources.map(r => r.resource);
+            resourceChart.data.datasets[0].data = resources.map(r => r.quantity);
+            resourceChart.update();
+        }
+
+        // Propose Plan
+        function proposePlan() {
+            const proposalInput = document.getElementById('proposalInput');
+            const proposal = proposalInput.value.trim();
+
+            if (proposal && !proposals.includes(proposal)) {
+                proposals.push(proposal);
+                updateVoteSection();
+                proposalInput.value = '';
+            } else {
+                alert('Please enter a unique proposal.');
+            }
+        }
+
+        function updateVoteSection() {
+            const voteSection = document.getElementById('voteSection');
+            voteSection.innerHTML = proposals.map((p, index) => `
+                <div class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    <span>${p}</span>
+                    <div class="flex gap-2">
+                        <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
+                        <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function vote(proposalIndex, choice) {
+            if (!votes[proposalIndex]) votes[proposalIndex] = { yes: 0, no: 0 };
+            votes[proposalIndex][choice]++;
+            alert(`Voted ${choice} for "${proposals[proposalIndex]}"`);
+        }
+
+        function viewResults() {
+            if (proposals.length === 0) {
+                alert('No proposals to display results for.');
+                return;
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+
+            const voteCtx = document.getElementById('voteChart').getContext('2d');
+            if (voteChart) voteChart.destroy();
+
+            const labels = proposals;
+            const yesVotes = proposals.map((_, i) => votes[i]?.yes || 0);
+            const noVotes = proposals.map((_, i) => votes[i]?.no || 0);
+
+            voteChart = new Chart(voteCtx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Yes Votes',
+                            data: yesVotes,
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'No Votes',
+                            data: noVotes,
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } },
+                    plugins: { legend: { labels: { color: '#1f2937' } } },
+                    animation: { duration: 1000, easing: 'easeInOutQuad' }
+                }
+            });
+        }
+
+        // Post Knowledge
+        function postKnowledge() {
+            const knowledgeInput = document.getElementById('knowledgeInput');
+            const post = knowledgeInput.value.trim();
+
+            if (post) {
+                knowledgePosts.push({ post, timestamp: new Date().toLocaleString() });
+                updateKnowledgeFeed();
+                knowledgeInput.value = '';
+            } else {
+                alert('Please enter a tip or story to share.');
+            }
+        }
+
+        function updateKnowledgeFeed() {
+            const knowledgeFeed = document.getElementById('knowledgeFeed');
+            knowledgeFeed.innerHTML = knowledgePosts.map(p => `
+                <div class="fade-in bg-gray-50 p-2 rounded-md">
+                    <p>${p.post}</p>
+                    <p class="text-sm text-gray-500">Posted on: ${p.timestamp}</p>
+                </div>
+            `).join('');
+        }
+
+        // Log initialization
+        console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
+    </script>
+</body>
+</html>
