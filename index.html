@@ -24,6 +24,9 @@
         .btn-yellow { background: linear-gradient(45deg, #f59e0b, #fbbf24); }
         .btn-yellow:hover { background: linear-gradient(45deg, #d97706, #f59e0b); }
         canvas { border-radius: 0.75rem; border: 1px solid #e5e7eb; }
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext { visibility: hidden; width: 120px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body class="font-sans p-6 max-w-4xl mx-auto">
@@ -33,13 +36,25 @@
         <p class="text-lg text-gray-600">Leveraging Collective Intelligence for Sustainable Cluster Farming</p>
     </header>
 
+    <!-- User Profile Setup -->
+    <div class="card p-6 mb-6 fade-in">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">User Profile</h2>
+        <p class="text-gray-600 mb-2">Set up your profile to participate in the collective.</p>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="userName" placeholder="Your Name" class="p-2 border rounded-md w-full input-field">
+            <input type="number" id="farmSize" placeholder="Farm Size (hectares)" min="0" class="p-2 border rounded-md w-24 input-field">
+            <button onclick="saveUserProfile()" class="btn-green text-white p-2 rounded-md pulse">Save</button>
+        </div>
+        <p id="userProfileDisplay" class="text-gray-600"></p>
+    </div>
+
     <!-- Introduction -->
     <div class="card p-6 mb-6 fade-in">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Welcome to CICFO</h2>
         <p class="text-gray-600 mb-4">
             CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
         </p>
-        <p class="text-gray-600">Created by an <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank"> innovator</a> passionate about sustainable agriculture.</p>
+        <p class="text-gray-600">Created by <a href="https://www.linkedin.com/in/azeezhamzat" style="color: #059669;" target="_blank"> Azeez Hamzat</a> for a sustainable future.</p>
     </div>
 
     <!-- Resource Mapping -->
@@ -47,10 +62,17 @@
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Resource Mapping</h2>
         <p class="text-gray-600 mb-2">Share and view resource availability in your cluster.</p>
         <div class="flex gap-2 mb-4">
-            <input type="text" id="resourceInput" placeholder="Resource (e.g., Water Level)" class="p-2 border rounded-md w-full input-field">
+            <input type="text" id="resourceInput" placeholder="Resource (e.g., Water)" class="p-2 border rounded-md w-full input-field">
+            <select id="resourceCategory" class="p-2 border rounded-md input-field">
+                <option value="Water">Water</option>
+                <option value="Fertilizer">Fertilizer</option>
+                <option value="Labor">Labor</option>
+                <option value="Other">Other</option>
+            </select>
             <input type="number" id="quantityInput" placeholder="Quantity" min="0" class="p-2 border rounded-md w-24 input-field">
-            <button onclick="addResource()" class="btn-green text-white p-2 rounded-md pulse">Submit</button>
+            <button onclick="addResource()" class="btn-green text-white p-2 rounded-md pulse tooltip">Submit<span class="tooltiptext">Add your resource to the collective pool</span></button>
         </div>
+        <div id="resourceStats" class="text-gray-600 mb-4"></div>
         <div id="mapPlaceholder" class="h-64 rounded-md">
             <canvas id="resourceChart" class="w-full h-full"></canvas>
         </div>
@@ -60,10 +82,10 @@
     <!-- Decision Dashboard -->
     <div class="card p-6 mb-6 fade-in">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Decision Dashboard</h2>
-        <p class="text-gray-600 mb-2">Propose and vote on resource allocation plans.</p>
+        <p class="text-gray-600 mb-2">Propose and vote on resource allocation plans (weighted by farm size).</p>
         <div class="flex gap-2 mb-4">
             <input type="text" id="proposalInput" placeholder="Proposal (e.g., Prioritize water for maize)" class="p-2 border rounded-md w-full input-field">
-            <button onclick="proposePlan()" class="btn-blue text-white p-2 rounded-md pulse">Propose</button>
+            <button onclick="proposePlan()" class="btn-blue text-white p-2 rounded-md pulse tooltip">Propose<span class="tooltiptext">Submit a plan for collective voting</span></button>
         </div>
         <div id="voteSection" class="space-y-2"></div>
         <button onclick="viewResults()" class="btn-purple text-white p-2 rounded-md hover:bg-purple-700 mt-4 pulse">View Results</button>
@@ -71,15 +93,20 @@
             <h3 class="text-lg font-semibold text-gray-800 mb-2">Voting Results</h3>
             <canvas id="voteChart" class="h-64 w-full"></canvas>
         </div>
+        <div id="recommendations" class="mt-4 text-gray-600"></div>
     </div>
 
     <!-- Knowledge Hub -->
     <div class="card p-6 mb-6 fade-in">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Knowledge Hub</h2>
-        <p class="text-gray-600 mb-2">Share and learn sustainable farming practices.</p>
+        <p class="text-gray-600 mb-2">Share and learn sustainable farming practices. Upvote helpful posts!</p>
         <textarea id="knowledgeInput" placeholder="Share a tip or story..." class="p-2 border rounded-md w-full mb-2 input-field"></textarea>
-        <button onclick="postKnowledge()" class="btn-yellow text-white p-2 rounded-md pulse">Post</button>
+        <button onclick="postKnowledge()" class="btn-yellow text-white p-2 rounded-md pulse tooltip">Post<span class="tooltiptext">Share your knowledge with the collective</span></button>
         <div id="knowledgeFeed" class="mt-4 space-y-2"></div>
+        <div id="leaderboard" class="mt-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Leaderboard</h3>
+            <ul id="leaderboardList" class="space-y-2"></ul>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -88,13 +115,38 @@
     </footer>
 
     <script>
-        // State Management
-        let resources = [];
-        let proposals = [];
-        let votes = {};
-        let knowledgePosts = [];
+        // State Management with Local Storage
+        let userProfile = JSON.parse(localStorage.getItem('userProfile')) || null;
+        let resources = JSON.parse(localStorage.getItem('resources')) || [];
+        let proposals = JSON.parse(localStorage.getItem('proposals')) || [];
+        let votes = JSON.parse(localStorage.getItem('votes')) || {};
+        let knowledgePosts = JSON.parse(localStorage.getItem('knowledgePosts')) || [];
         let resourceChart = null;
         let voteChart = null;
+
+        // Initialize User Profile Display
+        function initializeUserProfile() {
+            const userProfileDisplay = document.getElementById('userProfileDisplay');
+            if (userProfile) {
+                userProfileDisplay.textContent = `Welcome, ${userProfile.name} (Farm Size: ${userProfile.farmSize} hectares)`;
+            } else {
+                userProfileDisplay.textContent = 'Please set up your profile to participate.';
+            }
+        }
+
+        // Save User Profile
+        function saveUserProfile() {
+            const userName = document.getElementById('userName').value.trim();
+            const farmSize = parseFloat(document.getElementById('farmSize').value);
+            if (userName && !isNaN(farmSize) && farmSize > 0) {
+                userProfile = { name: userName, farmSize, contributions: 0 };
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                initializeUserProfile();
+                alert('Profile saved successfully!');
+            } else {
+                alert('Please enter a valid name and farm size.');
+            }
+        }
 
         // Initialize Resource Chart
         const resourceCtx = document.getElementById('resourceChart').getContext('2d');
@@ -120,15 +172,23 @@
 
         // Add Resource
         function addResource() {
+            if (!userProfile) {
+                alert('Please set up your profile before adding resources.');
+                return;
+            }
             const resourceInput = document.getElementById('resourceInput');
+            const categoryInput = document.getElementById('resourceCategory');
             const quantityInput = document.getElementById('quantityInput');
             const resource = resourceInput.value.trim();
+            const category = categoryInput.value;
             const quantity = parseInt(quantityInput.value);
 
             if (resource && !isNaN(quantity) && quantity >= 0) {
-                resources.push({ resource, quantity });
+                resources.push({ resource, category, quantity, user: userProfile.name });
+                localStorage.setItem('resources', JSON.stringify(resources));
                 updateResourceList();
                 updateResourceChart();
+                updateResourceStats();
                 resourceInput.value = '';
                 quantityInput.value = '';
             } else {
@@ -140,24 +200,52 @@
             const resourceList = document.getElementById('resourceList');
             resourceList.innerHTML = resources.map(r => `
                 <li class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                    ${r.resource}: ${r.quantity} <span class="text-green-500"><i class="fas fa-check"></i></span>
+                    ${r.resource} (${r.category}): ${r.quantity} by ${r.user} <span class="text-green-500"><i class="fas fa-check"></i></span>
                 </li>
             `).join('');
         }
 
         function updateResourceChart() {
-            resourceChart.data.labels = resources.map(r => r.resource);
-            resourceChart.data.datasets[0].data = resources.map(r => r.quantity);
+            const categories = [...new Set(resources.map(r => r.category))];
+            const dataByCategory = categories.map(cat => {
+                return resources.filter(r => r.category === cat).reduce((sum, r) => sum + r.quantity, 0);
+            });
+
+            resourceChart.data.labels = categories;
+            resourceChart.data.datasets[0].data = dataByCategory;
             resourceChart.update();
+        }
+
+        function updateResourceStats() {
+            const resourceStats = document.getElementById('resourceStats');
+            const totalResources = resources.reduce((sum, r) => sum + r.quantity, 0);
+            const resourcesByCategory = resources.reduce((acc, r) => {
+                acc[r.category] = (acc[r.category] || 0) + r.quantity;
+                return acc;
+            }, {});
+            let statsHTML = `<p>Total Resources: ${totalResources}</p>`;
+            for (const [cat, qty] of Object.entries(resourcesByCategory)) {
+                statsHTML += `<p>${cat}: ${qty}</p>`;
+            }
+            // Simple scarcity alert
+            if (resourcesByCategory['Water'] < 100) {
+                statsHTML += `<p class="text-red-600">Alert: Water levels are critically low!</p>`;
+            }
+            resourceStats.innerHTML = statsHTML;
         }
 
         // Propose Plan
         function proposePlan() {
+            if (!userProfile) {
+                alert('Please set up your profile before proposing plans.');
+                return;
+            }
             const proposalInput = document.getElementById('proposalInput');
             const proposal = proposalInput.value.trim();
 
             if (proposal && !proposals.includes(proposal)) {
-                proposals.push(proposal);
+                proposals.push({ text: proposal, user: userProfile.name, comments: [] });
+                localStorage.setItem('proposals', JSON.stringify(proposals));
                 updateVoteSection();
                 proposalInput.value = '';
             } else {
@@ -168,20 +256,50 @@
         function updateVoteSection() {
             const voteSection = document.getElementById('voteSection');
             voteSection.innerHTML = proposals.map((p, index) => `
-                <div class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                    <span>${p}</span>
-                    <div class="flex gap-2">
-                        <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
-                        <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
+                <div class="fade-in bg-gray-50 p-2 rounded-md">
+                    <div class="flex items-center justify-between">
+                        <span>${p.text} by ${p.user}</span>
+                        <div class="flex gap-2">
+                            <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
+                            <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" id="commentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
+                        <button onclick="addComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
+                        <ul class="mt-2 space-y-1">
+                            ${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}
+                        </ul>
                     </div>
                 </div>
             `).join('');
         }
 
+        function addComment(proposalIndex) {
+            if (!userProfile) {
+                alert('Please set up your profile before commenting.');
+                return;
+            }
+            const commentInput = document.getElementById(`commentInput${proposalIndex}`);
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                proposals[proposalIndex].comments.push({ text: commentText, user: userProfile.name });
+                localStorage.setItem('proposals', JSON.stringify(proposals));
+                updateVoteSection();
+                commentInput.value = '';
+            }
+        }
+
         function vote(proposalIndex, choice) {
-            if (!votes[proposalIndex]) votes[proposalIndex] = { yes: 0, no: 0 };
+            if (!userProfile) {
+                alert('Please set up your profile before voting.');
+                return;
+            }
+            if (!votes[proposalIndex]) votes[proposalIndex] = { yes: 0, no: 0, weightedYes: 0, weightedNo: 0 };
             votes[proposalIndex][choice]++;
-            alert(`Voted ${choice} for "${proposals[proposalIndex]}"`);
+            votes[proposalIndex][`weighted${choice.charAt(0).toUpperCase() + choice.slice(1)}`] += userProfile.farmSize;
+            localStorage.setItem('votes', JSON.stringify(votes));
+            alert(`Voted ${choice} for "${proposals[proposalIndex].text}" (Weighted by farm size: ${userProfile.farmSize})`);
         }
 
         function viewResults() {
@@ -196,9 +314,11 @@
             const voteCtx = document.getElementById('voteChart').getContext('2d');
             if (voteChart) voteChart.destroy();
 
-            const labels = proposals;
+            const labels = proposals.map(p => p.text);
             const yesVotes = proposals.map((_, i) => votes[i]?.yes || 0);
             const noVotes = proposals.map((_, i) => votes[i]?.no || 0);
+            const weightedYesVotes = proposals.map((_, i) => votes[i]?.weightedYes || 0);
+            const weightedNoVotes = proposals.map((_, i) => votes[i]?.weightedNo || 0);
 
             voteChart = new Chart(voteCtx, {
                 type: 'bar',
@@ -206,7 +326,7 @@
                     labels,
                     datasets: [
                         {
-                            label: 'Yes Votes',
+                            label: 'Yes Votes (Raw)',
                             data: yesVotes,
                             backgroundColor: 'rgba(16, 185, 129, 0.7)',
                             borderColor: 'rgba(16, 185, 129, 1)',
@@ -214,9 +334,25 @@
                             borderRadius: 5
                         },
                         {
-                            label: 'No Votes',
+                            label: 'No Votes (Raw)',
                             data: noVotes,
                             backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Yes Votes (Weighted)',
+                            data: weightedYesVotes,
+                            backgroundColor: 'rgba(16, 185, 129, 0.4)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'No Votes (Weighted)',
+                            data: weightedNoVotes,
+                            backgroundColor: 'rgba(239, 68, 68, 0.4)',
                             borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 1,
                             borderRadius: 5
@@ -229,16 +365,34 @@
                     animation: { duration: 1000, easing: 'easeInOutQuad' }
                 }
             });
+
+            // Simple Recommendation System
+            const recommendations = document.getElementById('recommendations');
+            let recHTML = '<h3 class="text-lg font-semibold text-gray-800 mb-2">Recommendations</h3>';
+            proposals.forEach((p, i) => {
+                if (votes[i]?.weightedYes > votes[i]?.weightedNo) {
+                    recHTML += `<p>Based on weighted votes, "${p.text}" is recommended for adoption.</p>`;
+                }
+            });
+            recommendations.innerHTML = recHTML;
         }
 
         // Post Knowledge
         function postKnowledge() {
+            if (!userProfile) {
+                alert('Please set up your profile before posting knowledge.');
+                return;
+            }
             const knowledgeInput = document.getElementById('knowledgeInput');
             const post = knowledgeInput.value.trim();
 
             if (post) {
-                knowledgePosts.push({ post, timestamp: new Date().toLocaleString() });
+                knowledgePosts.push({ post, user: userProfile.name, timestamp: new Date().toLocaleString(), upvotes: 0, comments: [] });
+                userProfile.contributions++;
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                localStorage.setItem('knowledgePosts', JSON.stringify(knowledgePosts));
                 updateKnowledgeFeed();
+                updateLeaderboard();
                 knowledgeInput.value = '';
             } else {
                 alert('Please enter a tip or story to share.');
@@ -247,16 +401,78 @@
 
         function updateKnowledgeFeed() {
             const knowledgeFeed = document.getElementById('knowledgeFeed');
-            knowledgeFeed.innerHTML = knowledgePosts.map(p => `
+            knowledgeFeed.innerHTML = knowledgePosts.map((p, index) => `
                 <div class="fade-in bg-gray-50 p-2 rounded-md">
                     <p>${p.post}</p>
-                    <p class="text-sm text-gray-500">Posted on: ${p.timestamp}</p>
+                    <p class="text-sm text-gray-500">Posted by ${p.user} on ${p.timestamp}</p>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="upvoteKnowledge(${index})" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Upvote (${p.upvotes})</button>
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" id="knowledgeCommentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
+                        <button onclick="addKnowledgeComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
+                        <ul class="mt-2 space-y-1">
+                            ${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}
+                        </ul>
+                    </div>
                 </div>
             `).join('');
         }
 
-        // Log initialization
-        console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
+        function upvoteKnowledge(postIndex) {
+            if (!userProfile) {
+                alert('Please set up your profile before upvoting.');
+                return;
+            }
+            knowledgePosts[postIndex].upvotes++;
+            localStorage.setItem('knowledgePosts', JSON.stringify(knowledgePosts));
+            updateKnowledgeFeed();
+            updateLeaderboard();
+        }
+
+        function addKnowledgeComment(postIndex) {
+            if (!userProfile) {
+                alert('Please set up your profile before commenting.');
+                return;
+            }
+            const commentInput = document.getElementById(`knowledgeCommentInput${postIndex}`);
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                knowledgePosts[postIndex].comments.push({ text: commentText, user: userProfile.name });
+                localStorage.setItem('knowledgePosts', JSON.stringify(knowledgePosts));
+                updateKnowledgeFeed();
+                commentInput.value = '';
+            }
+        }
+
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            const users = {};
+            knowledgePosts.forEach(p => {
+                users[p.user] = (users[p.user] || { contributions: 0, upvotes: 0 });
+                users[p.user].contributions++;
+                users[p.user].upvotes += p.upvotes;
+            });
+            const sortedUsers = Object.entries(users).sort((a, b) => b[1].upvotes - a[1].upvotes);
+            leaderboardList.innerHTML = sortedUsers.map(([user, stats]) => `
+                <li class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    ${user}: ${stats.contributions} posts, ${stats.upvotes} upvotes
+                    ${stats.upvotes > 10 ? '<span class="text-yellow-500">★ Expert</span>' : ''}
+                </li>
+            `).join('');
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            initializeUserProfile();
+            updateResourceList();
+            updateResourceChart();
+            updateResourceStats();
+            updateVoteSection();
+            updateKnowledgeFeed();
+            updateLeaderboard();
+            console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
+        };
     </script>
 </body>
 </html>
