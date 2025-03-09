@@ -12,8 +12,15 @@
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         .fade-in { animation: fadeIn 0.5s ease-in; }
         .pulse { animation: pulse 1.5s infinite ease-in-out; }
-        body { background: linear-gradient(135deg, #f0f7f4, #e0ece6); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { background: white; border-radius: 1rem; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); transition: transform 0.3s, box-shadow 0.3s; }
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f0f7f4, #e0ece6);
+            --card-bg: white;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+        }
+        body { background: var(--bg-gradient); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-primary); }
+        body.dark { --bg-gradient: linear-gradient(135deg, #1f2937, #374151); --card-bg: #2d3748; --text-primary: #e5e7eb; --text-secondary: #9ca3af; }
+        .card { background: var(--card-bg); border-radius: 1rem; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); transition: transform 0.3s, box-shadow 0.3s; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); }
         .input-field { transition: border-color 0.3s, box-shadow 0.3s; }
         .input-field:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); outline: none; }
@@ -36,6 +43,10 @@
         .progress-bar { background: #e5e7eb; border-radius: 0.5rem; height: 10px; }
         .progress-fill { background: #10b981; height: 100%; border-radius: 0.5rem; transition: width 0.3s; }
         .notification { position: fixed; top: 10px; right: 10px; background: #34d399; color: white; padding: 10px; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1000; display: none; }
+        .dark .collapsible { background: #4b5563; }
+        .dark .card { border: 1px solid #4b5563; }
+        .dark canvas { border-color: #4b5563; }
+        .dark .progress-bar { background: #4b5563; }
     </style>
 </head>
 <body class="font-sans p-6 max-w-6xl mx-auto">
@@ -43,43 +54,46 @@
     <div id="notification" class="notification"></div>
 
     <!-- Header -->
-    <header class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-green-700 mb-2 fade-in">CICFO</h1>
-        <p class="text-lg text-gray-600">Leveraging Collective Intelligence for Sustainable Cluster Farming</p>
+    <header class="text-center mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-4xl font-bold text-green-700 mb-2 fade-in">CICFO</h1>
+            <p class="text-lg text-gray-600">Leveraging Collective Intelligence for Sustainable Cluster Farming</p>
+        </div>
+        <button onclick="toggleDarkMode()" class="btn-blue text-white p-2 rounded-md tooltip"><i class="fas fa-moon"></i><span class="tooltiptext">Toggle Dark Mode</span></button>
     </header>
 
-    <!-- Introduction -->
+    <!-- Dashboard -->
     <div class="card p-6 mb-6 fade-in">
-        <div>
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-info-circle mr-2"></i>Welcome to CICFO</h2>
+        <div class="collapsible" onclick="toggleCollapse('dashboardContent')">
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</h2>
         </div>
-        <div id="introContent">
-            <p class="text-gray-600 mb-4">
-                CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
-            </p>
-            <p class="text-gray-600">Created by <a href="https://www.linkedin.com/in/azeezhamzat" style="color: #059669;" target="_blank"> Azeez Hamzat</a> for a sustainable future.</p>
+        <div id="dashboardContent" class="content">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><p>Total Resources: <span id="dashResources">0</span></p></div>
+                <div><p>Active Proposals: <span id="dashProposals">0</span></p></div>
+                <div><p>Your Points: <span id="dashPoints">0</span></p></div>
+            </div>
         </div>
     </div>
 
     <!-- Instructions -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('instructionsContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-question-circle mr-2"></i>Instructions: What is CICFO & How to Use It</h2>
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-question-circle mr-2"></i>Instructions: What is CICFO & How to Use It</h2>
         </div>
         <div id="instructionsContent" class="content">
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">What is CICFO?</h3>
+            <h3 class="text-lg font-semibold mb-2">What is CICFO?</h3>
             <p class="text-gray-600 mb-4">
-                CICFO (Collective Intelligence for Cluster Farming) is a tool designed to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges
+                CICFO (Collective Intelligence for Cluster Farming) is a tool designed to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges.
             </p>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">How to Use CICFO</h3>
+            <h3 class="text-lg font-semibold mb-2">How to Use CICFO</h3>
             <ul class="text-gray-600 space-y-2">
-                <li><strong>1. Set Up Your Profile:</strong> Enter your name and farm size in the "User Profile" section to join the collective. This unlocks all features and tracks your contributions.</li>
-                <li><strong>2. Map Resources:</strong> In "Resource Mapping," type a resource (e.g., "Water," "Seeds," "Tractors") and its quantity. The dropdown is optional—select a category if it fits, or leave it blank to use your input as a new category. New categories are automatically added to the dropdown for future use. View charts and trends to spot patterns or shortages.</li>
-                <li><strong>3. Make Decisions:</strong> In "Decision Dashboard," propose plans (e.g., "Prioritize water for maize") and vote (weighted by farm size). Check results and consensus to agree on actions.</li>
-                <li><strong>4. Share Knowledge:</strong> In "Knowledge Hub," post tips or stories, upvote helpful ideas, and get personalized recommendations based on your interests.</li>
-                <li><strong>5. Earn Rewards:</strong> In "Challenges," complete tasks like posting tips or voting to earn points and badges. Track your progress in "User Profile."</li>
-                <li><strong>6. Clear Data (Optional):</strong> In "User Profile," use the "Clear Data" button to reset all data if you want to start fresh. Confirm carefully—this can’t be undone!</li>
-                <li><strong>Tip:</strong> Click section headers to expand/collapse them. Your data saves in your browser, so it’s always there when you return!</li>
+                <li><strong>1. Set Up Your Profile:</strong> Enter your name and farm size in "User Profile" to join. Export/import data or clear it as needed.</li>
+                <li><strong>2. Map Resources:</strong> Add resources (e.g., "Water," "Seeds") in "Resource Mapping." Use the optional category dropdown or type a new one. Analyze trends and optimize allocation.</li>
+                <li><strong>3. Make Decisions:</strong> Propose and vote on plans in "Decision Dashboard." View results, consensus, and predictions.</li>
+                <li><strong>4. Share Knowledge:</strong> Post tips in "Knowledge Hub," upvote, and filter posts for insights.</li>
+                <li><strong>5. Earn Rewards:</strong> Complete tasks in "Challenges" and track achievements in "Achievements."</li>
+                <li><strong>Tip:</strong> Use search/filter options and toggle dark mode for comfort.</li>
             </ul>
         </div>
     </div>
@@ -87,51 +101,56 @@
     <!-- User Profile Setup -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('profileContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-user mr-2"></i>User Profile</h2>
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-user mr-2"></i>User Profile</h2>
         </div>
         <div id="profileContent" class="content">
             <p class="text-gray-600 mb-2">Set up your profile to participate in the collective.</p>
             <div class="flex gap-2 mb-4">
                 <input type="text" id="userName" placeholder="Your Name" class="p-2 border rounded-md w-full input-field">
                 <input type="number" id="farmSize" placeholder="Farm Size (hectares)" min="0" class="p-2 border rounded-md w-24 input-field">
-                <button onclick="saveUserProfile()" class="btn-green text-white p-2 rounded-md pulse tooltip">Save<span class="tooltiptext">Save your profile to join the collective</span></button>
+                <button onclick="saveUserProfile()" class="btn-green text-white p-2 rounded-md pulse tooltip">Save<span class="tooltiptext">Save your profile</span></button>
             </div>
             <p id="userProfileDisplay" class="text-gray-600 mb-2"></p>
             <div id="userProgress" class="mt-4">
                 <p class="text-gray-600">Engagement Progress:</p>
-                <div class="progress-bar">
-                    <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
-                </div>
-                <p id="progressText" class="text-sm text-gray-500 mt-1"></p>
+                <div class="progress-bar"><div id="progressFill" class="progress-fill" style="width: 0%;"></div></div>
+                <p id="progressText" class="text-sm mt-1"></p>
             </div>
             <div id="badges" class="mt-4 flex gap-2"></div>
-            <button onclick="clearData()" class="btn-red text-white p-2 rounded-md mt-4 tooltip">Clear Data<span class="tooltiptext">Reset all data and start fresh</span></button>
+            <div class="mt-4 flex gap-2">
+                <button onclick="exportData()" class="btn-blue text-white p-2 rounded-md tooltip">Export Data<span class="tooltiptext">Download your data as JSON</span></button>
+                <button onclick="importData()" class="btn-yellow text-white p-2 rounded-md tooltip">Import Data<span class="tooltiptext">Upload a JSON file</span></button>
+                <button onclick="clearData()" class="btn-red text-white p-2 rounded-md tooltip">Clear Data<span class="tooltiptext">Reset all data</span></button>
+            </div>
         </div>
     </div>
 
     <!-- Resource Mapping -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('resourceContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-seedling mr-2"></i>Resource Mapping</h2>
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-seedling mr-2"></i>Resource Mapping</h2>
         </div>
         <div id="resourceContent" class="content">
-            <p class="text-gray-600 mb-2">Share and view resource availability in your cluster.</p>
+            <p class="text-gray-600 mb-2">Share and view resource availability.</p>
             <div class="flex gap-2 mb-4">
                 <input type="text" id="resourceInput" placeholder="Resource (e.g., Water, Seeds)" class="p-2 border rounded-md w-full input-field">
                 <select id="resourceCategory" class="p-2 border rounded-md input-field">
                     <option value="" selected>Optional Category</option>
-                    <option value="Water">Water</option>
-                    <option value="Fertilizer">Fertilizer</option>
-                    <option value="Labor">Labor</option>
-                    <option value="Other">Other</option>
                 </select>
                 <input type="number" id="quantityInput" placeholder="Quantity" min="0" class="p-2 border rounded-md w-24 input-field">
-                <button onclick="addResource()" class="btn-green text-white p-2 rounded-md pulse tooltip">Submit<span class="tooltiptext">Add your resource to the collective pool</span></button>
+                <button onclick="addResource()" class="btn-green text-white p-2 rounded-md pulse tooltip">Submit<span class="tooltiptext">Add resource</span></button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="resourceSearch" placeholder="Search resources..." class="p-2 border rounded-md w-full input-field" onkeyup="filterResources()">
             </div>
             <div id="resourceStats" class="text-gray-600 mb-4"></div>
             <div id="resourceTrends" class="mb-4">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Resource Trends</h3>
+                <h3 class="text-lg font-semibold mb-2">Resource Trends & Predictions</h3>
                 <canvas id="resourceTrendChart" class="h-64 w-full"></canvas>
+            </div>
+            <div id="resourceAllocation" class="mb-4">
+                <h3 class="text-lg font-semibold mb-2">Resource Allocation Suggestion</h3>
+                <canvas id="allocationChart" class="h-64 w-full"></canvas>
             </div>
             <div id="mapPlaceholder" class="h-64 rounded-md mb-4">
                 <canvas id="resourceChart" class="w-full h-full"></canvas>
@@ -143,22 +162,25 @@
     <!-- Decision Dashboard -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('decisionContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-vote-yea mr-2"></i>Decision Dashboard</h2>
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-vote-yea mr-2"></i>Decision Dashboard</h2>
         </div>
         <div id="decisionContent" class="content">
-            <p class="text-gray-600 mb-2">Propose and vote on resource allocation plans (weighted by farm size).</p>
+            <p class="text-gray-600 mb-2">Propose and vote on plans.</p>
             <div class="flex gap-2 mb-4">
                 <input type="text" id="proposalInput" placeholder="Proposal (e.g., Prioritize water for maize)" class="p-2 border rounded-md w-full input-field">
-                <button onclick="proposePlan()" class="btn-blue text-white p-2 rounded-md pulse tooltip">Propose<span class="tooltiptext">Submit a plan for collective voting</span></button>
+                <button onclick="proposePlan()" class="btn-blue text-white p-2 rounded-md pulse tooltip">Propose<span class="tooltiptext">Submit plan</span></button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="proposalSearch" placeholder="Search proposals..." class="p-2 border rounded-md w-full input-field" onkeyup="filterProposals()">
             </div>
             <div id="voteSection" class="space-y-2"></div>
-            <button onclick="viewResults()" class="btn-purple text-white p-2 rounded-md hover:bg-purple-700 mt-4 pulse">View Results</button>
+            <button onclick="viewResults()" class="btn-purple text-white p-2 rounded-md mt-4 pulse">View Results</button>
             <div id="resultsSection" class="mt-4 hidden">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Voting Results</h3>
+                <h3 class="text-lg font-semibold mb-2">Voting Results</h3>
                 <canvas id="voteChart" class="h-64 w-full"></canvas>
             </div>
             <div id="consensusSection" class="mt-4">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Consensus Analysis</h3>
+                <h3 class="text-lg font-semibold mb-2">Consensus Analysis</h3>
                 <canvas id="consensusChart" class="h-64 w-full"></canvas>
             </div>
             <div id="recommendations" class="mt-4 text-gray-600"></div>
@@ -168,16 +190,19 @@
     <!-- Knowledge Hub -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('knowledgeContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-book mr-2"></i>Knowledge Hub</h2>
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-book mr-2"></i>Knowledge Hub</h2>
         </div>
         <div id="knowledgeContent" class="content">
-            <p class="text-gray-600 mb-2">Share and learn sustainable farming practices. Upvote helpful posts!</p>
+            <p class="text-gray-600 mb-2">Share and learn practices.</p>
             <textarea id="knowledgeInput" placeholder="Share a tip or story..." class="p-2 border rounded-md w-full mb-2 input-field"></textarea>
-            <button onclick="postKnowledge()" class="btn-yellow text-white p-2 rounded-md pulse tooltip">Post<span class="tooltiptext">Share your knowledge with the collective</span></button>
+            <button onclick="postKnowledge()" class="btn-yellow text-white p-2 rounded-md pulse tooltip">Post<span class="tooltiptext">Share knowledge</span></button>
+            <div class="flex gap-2 mt-4">
+                <input type="text" id="knowledgeSearch" placeholder="Search posts..." class="p-2 border rounded-md w-full input-field" onkeyup="filterKnowledge()">
+            </div>
             <div id="knowledgeRecommendations" class="mt-4 text-gray-600"></div>
             <div id="knowledgeFeed" class="mt-4 space-y-2"></div>
             <div id="leaderboard" class="mt-4">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Leaderboard</h3>
+                <h3 class="text-lg font-semibold mb-2">Leaderboard</h3>
                 <ul id="leaderboardList" class="space-y-2"></ul>
             </div>
         </div>
@@ -186,16 +211,27 @@
     <!-- Challenges -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('challengesContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-trophy mr-2"></i>Challenges</h2>
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-trophy mr-2"></i>Challenges</h2>
         </div>
         <div id="challengesContent" class="content">
-            <p class="text-gray-600 mb-2">Complete challenges to earn points and badges!</p>
+            <p class="text-gray-600 mb-2">Complete challenges for rewards!</p>
             <ul id="challengesList" class="space-y-2"></ul>
         </div>
     </div>
 
+    <!-- Achievements -->
+    <div class="card p-6 mb-6 fade-in">
+        <div class="collapsible" onclick="toggleCollapse('achievementsContent')">
+            <h2 class="text-xl font-semibold mb-4"><i class="fas fa-award mr-2"></i>Achievements</h2>
+        </div>
+        <div id="achievementsContent" class="content">
+            <p class="text-gray-600 mb-2">Track your achievements and rewards.</p>
+            <ul id="achievementsList" class="space-y-2"></ul>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="text-center text-gray-600 mt-8">
+    <footer class="text-center mt-8">
         <p>© 2025 CICFO | Built for a sustainable future</p>
     </footer>
 
@@ -210,6 +246,7 @@
         let resourceCategories = JSON.parse(localStorage.getItem('resourceCategories')) || ["Water", "Fertilizer", "Labor", "Other"];
         let resourceChart = null;
         let resourceTrendChart = null;
+        let allocationChart = null;
         let voteChart = null;
         let consensusChart = null;
 
@@ -220,6 +257,7 @@
                 userProfileDisplay.textContent = `Welcome, ${userProfile.name} (Farm Size: ${userProfile.farmSize} hectares)`;
                 updateUserProgress();
                 updateBadges();
+                updateDashboard();
             } else {
                 userProfileDisplay.textContent = 'Please set up your profile to participate.';
             }
@@ -241,7 +279,7 @@
 
         // Clear All Data
         function clearData() {
-            if (confirm('Are you sure you want to clear all data? This will reset your profile, resources, proposals, votes, and knowledge posts. This action cannot be undone.')) {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
                 localStorage.clear();
                 userProfile = null;
                 resources = [];
@@ -249,22 +287,81 @@
                 votes = {};
                 knowledgePosts = [];
                 interactions = {};
-                resourceCategories = ["Water", "Fertilizer", "Labor", "Other"]; // Reset to default categories
+                resourceCategories = ["Water", "Fertilizer", "Labor", "Other"];
                 initializeUserProfile();
                 updateResourceList();
                 updateResourceChart();
                 updateResourceStats();
                 updateResourceTrends();
+                updateResourceAllocation();
                 updateVoteSection();
                 updateKnowledgeFeed();
                 updateLeaderboard();
                 updateKnowledgeRecommendations();
                 updateChallenges();
-                updateResourceDropdown(); // Reset dropdown
+                updateAchievements();
+                updateResourceDropdown();
                 document.getElementById('userName').value = '';
                 document.getElementById('farmSize').value = '';
-                showNotification('All data has been cleared. Start fresh!');
+                showNotification('All data cleared. Start fresh!');
             }
+        }
+
+        // Export Data
+        function exportData() {
+            const data = { userProfile, resources, proposals, votes, knowledgePosts, interactions, resourceCategories };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cicfo_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data exported successfully!');
+        }
+
+        // Import Data
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const data = JSON.parse(event.target.result);
+                    userProfile = data.userProfile || null;
+                    resources = data.resources || [];
+                    proposals = data.proposals || [];
+                    votes = data.votes || {};
+                    knowledgePosts = data.knowledgePosts || [];
+                    interactions = data.interactions || {};
+                    resourceCategories = data.resourceCategories || ["Water", "Fertilizer", "Labor", "Other"];
+                    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                    localStorage.setItem('resources', JSON.stringify(resources));
+                    localStorage.setItem('proposals', JSON.stringify(proposals));
+                    localStorage.setItem('votes', JSON.stringify(votes));
+                    localStorage.setItem('knowledgePosts', JSON.stringify(knowledgePosts));
+                    localStorage.setItem('interactions', JSON.stringify(interactions));
+                    localStorage.setItem('resourceCategories', JSON.stringify(resourceCategories));
+                    initializeUserProfile();
+                    updateResourceList();
+                    updateResourceChart();
+                    updateResourceStats();
+                    updateResourceTrends();
+                    updateResourceAllocation();
+                    updateVoteSection();
+                    updateKnowledgeFeed();
+                    updateLeaderboard();
+                    updateKnowledgeRecommendations();
+                    updateChallenges();
+                    updateAchievements();
+                    updateResourceDropdown();
+                    showNotification('Data imported successfully!');
+                };
+                reader.readAsText(file);
+            };
+            input.click();
         }
 
         // Update User Progress
@@ -275,6 +372,7 @@
             const progress = Math.min((userProfile.points / 100) * 100, 100);
             progressFill.style.width = `${progress}%`;
             progressText.textContent = `Points: ${userProfile.points} (Next badge at 100 points)`;
+            updateDashboard();
         }
 
         // Update Badges
@@ -300,6 +398,7 @@
             localStorage.setItem('userProfile', JSON.stringify(userProfile));
             updateUserProgress();
             updateBadges();
+            updateAchievements();
             showNotification(`Earned ${points} points for ${action}!`);
         }
 
@@ -311,58 +410,75 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        // Initialize Resource Chart
+        // Toggle Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+        }
+
+        // Update Dashboard
+        function updateDashboard() {
+            document.getElementById('dashResources').textContent = resources.reduce((sum, r) => sum + r.quantity, 0);
+            document.getElementById('dashProposals').textContent = proposals.length;
+            document.getElementById('dashPoints').textContent = userProfile?.points || 0;
+        }
+
+        // Initialize Charts
         const resourceCtx = document.getElementById('resourceChart').getContext('2d');
         resourceChart = new Chart(resourceCtx, {
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Resource Quantity', data: [], backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 5 }] },
-            options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
         });
 
-        // Initialize Resource Trend Chart
         const resourceTrendCtx = document.getElementById('resourceTrendChart').getContext('2d');
         resourceTrendChart = new Chart(resourceTrendCtx, {
             type: 'line',
             data: { labels: [], datasets: [] },
-            options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } }, x: { ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+        });
+
+        const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+        allocationChart = new Chart(allocationCtx, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Suggested Allocation', data: [], backgroundColor: 'rgba(34, 197, 94, 0.7)', borderColor: 'rgba(34, 197, 94, 1)', borderWidth: 1, borderRadius: 5 }] },
+            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
         });
 
         // Update Resource Dropdown
         function updateResourceDropdown() {
             const categorySelect = document.getElementById('resourceCategory');
-            categorySelect.innerHTML = '<option value="" selected>Optional Category</option>' + 
-                resourceCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            categorySelect.innerHTML = '<option value="" selected>Optional Category</option>' + resourceCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
         // Add Resource
         function addResource() {
-            if (!userProfile) { alert('Please set up your profile before adding resources.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             const resourceInput = document.getElementById('resourceInput');
             const categoryInput = document.getElementById('resourceCategory');
             const quantityInput = document.getElementById('quantityInput');
             const resource = resourceInput.value.trim();
-            const category = categoryInput.value || resource; // Use dropdown if selected, otherwise use input as category
+            const category = categoryInput.value || resource;
             const quantity = parseInt(quantityInput.value);
             const timestamp = new Date().toLocaleDateString();
 
             if (resource && !isNaN(quantity) && quantity >= 0) {
-                // Add new category to dropdown if not already present
                 if (!resourceCategories.includes(category)) {
                     resourceCategories.push(category);
                     localStorage.setItem('resourceCategories', JSON.stringify(resourceCategories));
                     updateResourceDropdown();
                 }
-
                 resources.push({ resource, category, quantity, user: userProfile.name, timestamp });
                 localStorage.setItem('resources', JSON.stringify(resources));
                 updateResourceList();
                 updateResourceChart();
                 updateResourceStats();
                 updateResourceTrends();
+                updateResourceAllocation();
                 awardPoints(5, 'adding a resource');
                 resourceInput.value = '';
                 quantityInput.value = '';
-                categoryInput.value = ''; // Reset dropdown
+                categoryInput.value = '';
             } else {
                 alert('Please enter a valid resource name and quantity.');
             }
@@ -371,6 +487,17 @@
         function updateResourceList() {
             const resourceList = document.getElementById('resourceList');
             resourceList.innerHTML = resources.map(r => `
+                <li class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    ${r.resource} (${r.category}): ${r.quantity} by ${r.user} on ${r.timestamp} <span class="text-green-500"><i class="fas fa-check"></i></span>
+                </li>
+            `).join('');
+            updateDashboard();
+        }
+
+        function filterResources() {
+            const search = document.getElementById('resourceSearch').value.toLowerCase();
+            const resourceList = document.getElementById('resourceList');
+            resourceList.innerHTML = resources.filter(r => r.resource.toLowerCase().includes(search) || r.category.toLowerCase().includes(search) || r.user.toLowerCase().includes(search)).map(r => `
                 <li class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
                     ${r.resource} (${r.category}): ${r.quantity} by ${r.user} on ${r.timestamp} <span class="text-green-500"><i class="fas fa-check"></i></span>
                 </li>
@@ -400,16 +527,31 @@
             const categories = [...new Set(resources.map(r => r.category))];
             const datasets = categories.map(cat => {
                 const data = dates.map(date => resources.filter(r => r.category === cat && r.timestamp === date).reduce((sum, r) => sum + r.quantity, 0));
-                return { label: cat, data, borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`, fill: false };
+                // Simple EMA prediction (alpha = 0.3)
+                const forecast = data.length > 0 ? data.slice(-1)[0] * 0.7 + (data.length > 1 ? data.slice(-2)[0] : 0) * 0.3 : 0;
+                return { label: cat, data: [...data, forecast], borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`, fill: false, borderDash: data.length ? [0, 5] : [] };
             });
-            resourceTrendChart.data.labels = dates;
+            resourceTrendChart.data.labels = [...dates, 'Next Day (Predicted)'];
             resourceTrendChart.data.datasets = datasets;
             resourceTrendChart.update();
         }
 
+        function updateResourceAllocation() {
+            const categories = [...new Set(resources.map(r => r.category))];
+            const totalFarmSize = userProfile?.farmSize || 1; // Assume single user for simplicity
+            const totalResources = resources.reduce((sum, r) => sum + r.quantity, 0);
+            const allocationData = categories.map(cat => {
+                const catTotal = resources.filter(r => r.category === cat).reduce((sum, r) => sum + r.quantity, 0);
+                return (catTotal / totalResources) * totalFarmSize; // Proportional allocation
+            });
+            allocationChart.data.labels = categories;
+            allocationChart.data.datasets[0].data = allocationData;
+            allocationChart.update();
+        }
+
         // Propose Plan
         function proposePlan() {
-            if (!userProfile) { alert('Please set up your profile before proposing plans.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             const proposalInput = document.getElementById('proposalInput');
             const proposal = proposalInput.value.trim();
             const timestamp = new Date().toLocaleDateString();
@@ -419,7 +561,7 @@
                 localStorage.setItem('proposals', JSON.stringify(proposals));
                 updateVoteSection();
                 awardPoints(10, 'proposing a plan');
-                showNotification('New proposal added! Vote now to influence decisions.');
+                showNotification('New proposal added! Vote now.');
                 proposalInput.value = '';
             } else {
                 alert('Please enter a unique proposal.');
@@ -440,16 +582,36 @@
                     <div class="mt-2">
                         <input type="text" id="commentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
                         <button onclick="addComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
-                        <ul class="mt-2 space-y-1">
-                            ${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}
-                        </ul>
+                        <ul class="mt-2 space-y-1">${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}</ul>
+                    </div>
+                </div>
+            `).join('');
+            updateDashboard();
+        }
+
+        function filterProposals() {
+            const search = document.getElementById('proposalSearch').value.toLowerCase();
+            const voteSection = document.getElementById('voteSection');
+            voteSection.innerHTML = proposals.filter(p => p.text.toLowerCase().includes(search) || p.user.toLowerCase().includes(search)).map((p, index) => `
+                <div class="fade-in bg-gray-50 p-2 rounded-md">
+                    <div class="flex items-center justify-between">
+                        <span>${p.text} by ${p.user} on ${p.timestamp}</span>
+                        <div class="flex gap-2">
+                            <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
+                            <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-green-700">No</button>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" id="commentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
+                        <button onclick="addComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
+                        <ul class="mt-2 space-y-1">${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}</ul>
                     </div>
                 </div>
             `).join('');
         }
 
         function addComment(proposalIndex) {
-            if (!userProfile) { alert('Please set up your profile before commenting.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             const commentInput = document.getElementById(`commentInput${proposalIndex}`);
             const commentText = commentInput.value.trim();
             if (commentText) {
@@ -462,7 +624,7 @@
         }
 
         function vote(proposalIndex, choice) {
-            if (!userProfile) { alert('Please set up your profile before voting.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             if (!votes[proposalIndex]) votes[proposalIndex] = { yes: 0, no: 0, weightedYes: 0, weightedNo: 0, voters: [] };
             if (!votes[proposalIndex].voters.includes(userProfile.name)) {
                 votes[proposalIndex][choice]++;
@@ -474,25 +636,24 @@
                 interactions[userProfile.name] = interactions[userProfile.name] || { proposals: [], posts: [] };
                 interactions[userProfile.name].proposals.push(proposalIndex);
                 localStorage.setItem('interactions', JSON.stringify(interactions));
+                updateVoteSection();
             } else {
                 alert('You have already voted on this proposal.');
             }
         }
 
         function viewResults() {
-            if (proposals.length === 0) { alert('No proposals to display results for.'); return; }
+            if (proposals.length === 0) { alert('No proposals to display.'); return; }
             const resultsSection = document.getElementById('resultsSection');
             resultsSection.classList.remove('hidden');
 
             const voteCtx = document.getElementById('voteChart').getContext('2d');
             if (voteChart) voteChart.destroy();
-
             const labels = proposals.map(p => p.text);
             const yesVotes = proposals.map((_, i) => votes[i]?.yes || 0);
             const noVotes = proposals.map((_, i) => votes[i]?.no || 0);
             const weightedYesVotes = proposals.map((_, i) => votes[i]?.weightedYes || 0);
             const weightedNoVotes = proposals.map((_, i) => votes[i]?.weightedNo || 0);
-
             voteChart = new Chart(voteCtx, {
                 type: 'bar',
                 data: {
@@ -504,35 +665,33 @@
                         { label: 'No Votes (Weighted)', data: weightedNoVotes, backgroundColor: 'rgba(239, 68, 68, 0.4)', borderColor: 'rgba(239, 68, 68, 1)', borderWidth: 1, borderRadius: 5 }
                     ]
                 },
-                options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+                options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
             });
 
             const consensusCtx = document.getElementById('consensusChart').getContext('2d');
             if (consensusChart) consensusChart.destroy();
-
             const consensusData = proposals.map((p, i) => {
                 const totalWeightedVotes = (votes[i]?.weightedYes || 0) + (votes[i]?.weightedNo || 0);
                 return totalWeightedVotes > 0 ? (votes[i]?.weightedYes || 0) / totalWeightedVotes * 100 : 0;
             });
-
             consensusChart = new Chart(consensusCtx, {
                 type: 'pie',
                 data: { labels: proposals.map(p => p.text), datasets: [{ data: consensusData, backgroundColor: proposals.map(() => `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`), borderColor: '#ffffff', borderWidth: 1 }] },
-                options: { plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}% Consensus` } } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+                options: { plugins: { legend: {}, tooltip: { enabled: true, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}% Consensus` } } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
             });
 
             const recommendations = document.getElementById('recommendations');
-            let recHTML = '<h3 class="text-lg font-semibold text-gray-800 mb-2">Recommendations</h3>';
+            let recHTML = '<h3 class="text-lg font-semibold mb-2">Recommendations</h3>';
             proposals.forEach((p, i) => {
-                if (consensusData[i] > 75) { recHTML += `<p class="text-green-600">High Consensus: "${p.text}" has ${consensusData[i].toFixed(1)}% weighted support. Consider adopting.</p>`; }
-                else if (votes[i]?.weightedYes > votes[i]?.weightedNo) { recHTML += `<p>Based on weighted votes, "${p.text}" is recommended for adoption.</p>`; }
+                if (consensusData[i] > 75) { recHTML += `<p class="text-green-600">High Consensus: "${p.text}" has ${consensusData[i].toFixed(1)}% weighted support.</p>`; }
+                else if (votes[i]?.weightedYes > votes[i]?.weightedNo) { recHTML += `<p>Based on votes, "${p.text}" is recommended.</p>`; }
             });
             recommendations.innerHTML = recHTML;
         }
 
         // Post Knowledge
         function postKnowledge() {
-            if (!userProfile) { alert('Please set up your profile before posting knowledge.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             const knowledgeInput = document.getElementById('knowledgeInput');
             const post = knowledgeInput.value.trim();
             const timestamp = new Date().toLocaleDateString();
@@ -544,10 +703,10 @@
                 updateLeaderboard();
                 updateKnowledgeRecommendations();
                 awardPoints(10, 'posting knowledge');
-                showNotification('New knowledge post added! Share more to earn points.');
+                showNotification('New post added! Share more.');
                 knowledgeInput.value = '';
             } else {
-                alert('Please enter a tip or story to share.');
+                alert('Please enter a tip or story.');
             }
         }
 
@@ -563,16 +722,33 @@
                     <div class="mt-2">
                         <input type="text" id="knowledgeCommentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
                         <button onclick="addKnowledgeComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
-                        <ul class="mt-2 space-y-1">
-                            ${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}
-                        </ul>
+                        <ul class="mt-2 space-y-1">${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}</ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterKnowledge() {
+            const search = document.getElementById('knowledgeSearch').value.toLowerCase();
+            const knowledgeFeed = document.getElementById('knowledgeFeed');
+            knowledgeFeed.innerHTML = knowledgePosts.filter(p => p.post.toLowerCase().includes(search) || p.user.toLowerCase().includes(search)).map((p, index) => `
+                <div class="fade-in bg-gray-50 p-2 rounded-md">
+                    <p>${p.post}</p>
+                    <p class="text-sm text-gray-500">Posted by ${p.user} on ${p.timestamp}</p>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="upvoteKnowledge(${index})" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Upvote (${p.upvotes})</button>
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" id="knowledgeCommentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
+                        <button onclick="addKnowledgeComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
+                        <ul class="mt-2 space-y-1">${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}</ul>
                     </div>
                 </div>
             `).join('');
         }
 
         function upvoteKnowledge(postIndex) {
-            if (!userProfile) { alert('Please set up your profile before upvoting.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             if (!userProfile.upvotedPosts.includes(postIndex)) {
                 knowledgePosts[postIndex].upvotes++;
                 userProfile.upvotedPosts.push(postIndex);
@@ -591,7 +767,7 @@
         }
 
         function addKnowledgeComment(postIndex) {
-            if (!userProfile) { alert('Please set up your profile before commenting.'); return; }
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
             const commentInput = document.getElementById(`knowledgeCommentInput${postIndex}`);
             const commentText = commentInput.value.trim();
             if (commentText) {
@@ -620,19 +796,17 @@
             `).join('');
         }
 
-        // Collaborative Filtering for Knowledge Recommendations
         function updateKnowledgeRecommendations() {
             if (!userProfile) return;
             const recommendations = document.getElementById('knowledgeRecommendations');
-            let recHTML = '<h3 class="text-lg font-semibold text-gray-800 mb-2">Recommended Posts</h3>';
+            let recHTML = '<h3 class="text-lg font-semibold mb-2">Recommended Posts</h3>';
             const similarUsers = Object.entries(interactions).filter(([user, data]) => user !== userProfile.name && data.posts.some(post => userProfile.upvotedPosts.includes(post))).map(([user]) => user);
             const recommendedPosts = knowledgePosts.filter(p => similarUsers.some(user => interactions[user]?.posts.includes(p.id)) && !userProfile.upvotedPosts.includes(p.id));
             if (recommendedPosts.length > 0) { recHTML += recommendedPosts.slice(0, 3).map(p => `<p class="text-gray-600">"${p.post}" by ${p.user} (Upvotes: ${p.upvotes})</p>`).join(''); }
-            else { recHTML += '<p class="text-gray-600">No recommendations yet. Upvote posts to get personalized suggestions!</p>'; }
+            else { recHTML += '<p class="text-gray-600">No recommendations yet. Upvote posts to get suggestions!</p>'; }
             recommendations.innerHTML = recHTML;
         }
 
-        // Update Challenges
         function updateChallenges() {
             const challengesList = document.getElementById('challengesList');
             const challenges = [
@@ -649,6 +823,23 @@
             `).join('');
         }
 
+        function updateAchievements() {
+            const achievementsList = document.getElementById('achievementsList');
+            const achievements = [
+                { name: 'Resource Guru', points: 50, achieved: userProfile?.points >= 50 },
+                { name: 'Decision Maker', points: 75, achieved: userProfile?.points >= 75 },
+                { name: 'Knowledge Master', points: 100, achieved: userProfile?.points >= 100 },
+                { name: 'Challenge 1', points: 20, achieved: userProfile?.badges.includes('Challenge 1') },
+                { name: 'Challenge 2', points: 15, achieved: userProfile?.badges.includes('Challenge 2') },
+                { name: 'Challenge 3', points: 25, achieved: userProfile?.badges.includes('Challenge 3') }
+            ];
+            achievementsList.innerHTML = achievements.map(a => `
+                <li class="fade-in flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    ${a.name} (${a.points} points) ${a.achieved ? '<span class="text-green-500"><i class="fas fa-check-circle mr-1"></i>Achieved</span>' : '<span class="text-gray-500">Not Yet</span>'}
+                </li>
+            `).join('');
+        }
+
         // Toggle Collapsible Sections
         function toggleCollapse(contentId) {
             const content = document.getElementById(contentId);
@@ -657,17 +848,20 @@
 
         // Initialize on Load
         window.onload = function() {
+            if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
             initializeUserProfile();
             updateResourceList();
             updateResourceChart();
             updateResourceStats();
             updateResourceTrends();
+            updateResourceAllocation();
             updateVoteSection();
             updateKnowledgeFeed();
             updateLeaderboard();
             updateKnowledgeRecommendations();
             updateChallenges();
-            updateResourceDropdown(); // Initialize dropdown with stored categories
+            updateAchievements();
+            updateResourceDropdown();
             toggleCollapse('instructionsContent');
             console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
         };
