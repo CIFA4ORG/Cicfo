@@ -84,13 +84,13 @@
         <div id="instructionsContent" class="content">
             <h3 class="text-lg font-semibold mb-2">What is CICFO?</h3>
             <p class="text-gray-600 mb-4">
-                CICFO (Collective Intelligence for Cluster Farming) is a tool designed by <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank" style="color: #059669;">Azeez Adewale Hamzat</a>, to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges.
+                CICFO (Collective Intelligence for Cluster Farming) is a tool designed by <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank" style="color: #059669;">Azeez Adewale Hamzat</a> to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, resolving conflicts, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges.
             </p>
             <h3 class="text-lg font-semibold mb-2">How to Use CICFO</h3>
             <ul class="text-gray-600 space-y-2">
                 <li><strong>1. Set Up Your Profile:</strong> Enter your name and farm size in "User Profile" to join. Export/import data or clear it as needed.</li>
                 <li><strong>2. Map Resources:</strong> Add resources (e.g., "Water," "Seeds") in "Resource Mapping." Use the optional category dropdown or type a new one. Analyze trends and optimize allocation.</li>
-                <li><strong>3. Make Decisions:</strong> Propose and vote on plans in "Decision Dashboard." View results, consensus, and predictions.</li>
+                <li><strong>3. Make Decisions:</strong> Propose and vote on plans in "Decision Dashboard." Flag and resolve conflicts, view results, and consensus.</li>
                 <li><strong>4. Share Knowledge:</strong> Post tips in "Knowledge Hub," upvote, and filter posts for insights.</li>
                 <li><strong>5. Earn Rewards:</strong> Complete tasks in "Challenges" and track achievements in "Achievements."</li>
                 <li><strong>Tip:</strong> Use search/filter options and toggle dark mode for comfort.</li>
@@ -159,13 +159,13 @@
         </div>
     </div>
 
-    <!-- Decision Dashboard -->
+    <!-- Decision Dashboard with Conflict Resolution -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('decisionContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-vote-yea mr-2"></i>Decision Dashboard</h2>
         </div>
         <div id="decisionContent" class="content">
-            <p class="text-gray-600 mb-2">Propose and vote on plans.</p>
+            <p class="text-gray-600 mb-2">Propose, vote, and resolve conflicts on plans.</p>
             <div class="flex gap-2 mb-4">
                 <input type="text" id="proposalInput" placeholder="Proposal (e.g., Prioritize water for maize)" class="p-2 border rounded-md w-full input-field">
                 <button onclick="proposePlan()" class="btn-blue text-white p-2 rounded-md pulse tooltip">Propose<span class="tooltiptext">Submit plan</span></button>
@@ -230,9 +230,9 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer with Creator Credit -->
     <footer class="text-center mt-8">
-        <p>© 2025 CICFO | Built for a sustainable future</p>
+        <p>© 2025 CICFO | Built for a sustainable future by <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank" style="color: #059669;">Azeez Adewale Hamzat</a>
     </footer>
 
     <script>
@@ -244,6 +244,7 @@
         let knowledgePosts = JSON.parse(localStorage.getItem('knowledgePosts')) || [];
         let interactions = JSON.parse(localStorage.getItem('interactions')) || {};
         let resourceCategories = JSON.parse(localStorage.getItem('resourceCategories')) || ["Water", "Fertilizer", "Labor", "Other"];
+        let conflicts = JSON.parse(localStorage.getItem('conflicts')) || {};
         let resourceChart = null;
         let resourceTrendChart = null;
         let allocationChart = null;
@@ -287,6 +288,7 @@
                 votes = {};
                 knowledgePosts = [];
                 interactions = {};
+                conflicts = {};
                 resourceCategories = ["Water", "Fertilizer", "Labor", "Other"];
                 initializeUserProfile();
                 updateResourceList();
@@ -309,7 +311,7 @@
 
         // Export Data
         function exportData() {
-            const data = { userProfile, resources, proposals, votes, knowledgePosts, interactions, resourceCategories };
+            const data = { userProfile, resources, proposals, votes, knowledgePosts, interactions, resourceCategories, conflicts };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -337,6 +339,7 @@
                     knowledgePosts = data.knowledgePosts || [];
                     interactions = data.interactions || {};
                     resourceCategories = data.resourceCategories || ["Water", "Fertilizer", "Labor", "Other"];
+                    conflicts = data.conflicts || {};
                     localStorage.setItem('userProfile', JSON.stringify(userProfile));
                     localStorage.setItem('resources', JSON.stringify(resources));
                     localStorage.setItem('proposals', JSON.stringify(proposals));
@@ -344,6 +347,7 @@
                     localStorage.setItem('knowledgePosts', JSON.stringify(knowledgePosts));
                     localStorage.setItem('interactions', JSON.stringify(interactions));
                     localStorage.setItem('resourceCategories', JSON.stringify(resourceCategories));
+                    localStorage.setItem('conflicts', JSON.stringify(conflicts));
                     initializeUserProfile();
                     updateResourceList();
                     updateResourceChart();
@@ -527,7 +531,6 @@
             const categories = [...new Set(resources.map(r => r.category))];
             const datasets = categories.map(cat => {
                 const data = dates.map(date => resources.filter(r => r.category === cat && r.timestamp === date).reduce((sum, r) => sum + r.quantity, 0));
-                // Simple EMA prediction (alpha = 0.3)
                 const forecast = data.length > 0 ? data.slice(-1)[0] * 0.7 + (data.length > 1 ? data.slice(-2)[0] : 0) * 0.3 : 0;
                 return { label: cat, data: [...data, forecast], borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`, fill: false, borderDash: data.length ? [0, 5] : [] };
             });
@@ -538,11 +541,11 @@
 
         function updateResourceAllocation() {
             const categories = [...new Set(resources.map(r => r.category))];
-            const totalFarmSize = userProfile?.farmSize || 1; // Assume single user for simplicity
+            const totalFarmSize = userProfile?.farmSize || 1;
             const totalResources = resources.reduce((sum, r) => sum + r.quantity, 0);
             const allocationData = categories.map(cat => {
                 const catTotal = resources.filter(r => r.category === cat).reduce((sum, r) => sum + r.quantity, 0);
-                return (catTotal / totalResources) * totalFarmSize; // Proportional allocation
+                return (catTotal / totalResources) * totalFarmSize;
             });
             allocationChart.data.labels = categories;
             allocationChart.data.datasets[0].data = allocationData;
@@ -557,8 +560,9 @@
             const timestamp = new Date().toLocaleDateString();
 
             if (proposal && !proposals.some(p => p.text === proposal)) {
-                proposals.push({ text: proposal, user: userProfile.name, comments: [], timestamp });
+                proposals.push({ text: proposal, user: userProfile.name, comments: [], timestamp, conflicts: [], resolved: false });
                 localStorage.setItem('proposals', JSON.stringify(proposals));
+                detectConflicts(proposals.length - 1);
                 updateVoteSection();
                 awardPoints(10, 'proposing a plan');
                 showNotification('New proposal added! Vote now.');
@@ -568,22 +572,84 @@
             }
         }
 
+        // Detect Conflicts
+        function detectConflicts(proposalIndex) {
+            const proposal = proposals[proposalIndex];
+            const proposalWords = proposal.text.toLowerCase().split(' ');
+            const resourceKeywords = resourceCategories.map(cat => cat.toLowerCase());
+
+            proposals.forEach((otherProposal, otherIndex) => {
+                if (otherIndex !== proposalIndex && !proposal.resolved && !otherProposal.resolved) {
+                    const otherWords = otherProposal.text.toLowerCase().split(' ');
+                    const commonResources = resourceKeywords.some(keyword => proposalWords.includes(keyword) && otherWords.includes(keyword));
+                    if (commonResources && !conflicts[proposalIndex]?.includes(otherIndex)) {
+                        conflicts[proposalIndex] = conflicts[proposalIndex] || [];
+                        conflicts[proposalIndex].push(otherIndex);
+                        conflicts[otherIndex] = conflicts[otherIndex] || [];
+                        conflicts[otherIndex].push(proposalIndex);
+                        localStorage.setItem('conflicts', JSON.stringify(conflicts));
+                        showNotification(`Conflict detected between "${proposal.text}" and "${otherProposal.text}"`);
+                    }
+                }
+            });
+            updateVoteSection();
+        }
+
+        // Flag Conflict
+        function flagConflict(proposalIndex) {
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
+            detectConflicts(proposalIndex);
+            updateVoteSection();
+            awardPoints(5, 'flagging a conflict');
+        }
+
+        // Resolve Conflict
+        function resolveConflict(proposalIndex) {
+            if (!userProfile) { alert('Please set up your profile first.'); return; }
+            const commentInput = document.getElementById(`commentInput${proposalIndex}`);
+            const resolutionText = commentInput.value.trim();
+            if (resolutionText && conflicts[proposalIndex]?.length > 0) {
+                const conflictingProposals = conflicts[proposalIndex];
+                conflictingProposals.forEach(index => {
+                    proposals[index].resolved = true;
+                    proposals[index].resolution = resolutionText;
+                });
+                proposals[proposalIndex].resolved = true;
+                proposals[proposalIndex].resolution = resolutionText;
+                delete conflicts[proposalIndex];
+                conflictingProposals.forEach(index => delete conflicts[index]);
+                localStorage.setItem('proposals', JSON.stringify(proposals));
+                localStorage.setItem('conflicts', JSON.stringify(conflicts));
+                updateVoteSection();
+                awardPoints(10, 'resolving a conflict');
+                showNotification(`Conflict resolved for "${proposals[proposalIndex].text}" with: "${resolutionText}"`);
+                commentInput.value = '';
+            } else {
+                alert('Please provide a resolution comment.');
+            }
+        }
+
         function updateVoteSection() {
             const voteSection = document.getElementById('voteSection');
             voteSection.innerHTML = proposals.map((p, index) => `
-                <div class="fade-in bg-gray-50 p-2 rounded-md">
+                <div class="fade-in bg-gray-50 p-2 rounded-md ${p.resolved ? 'opacity-50' : ''}">
                     <div class="flex items-center justify-between">
-                        <span>${p.text} by ${p.user} on ${p.timestamp}</span>
+                        <span>${p.text} by ${p.user} on ${p.timestamp} ${p.resolved ? '(Resolved: ' + p.resolution + ')' : ''}</span>
                         <div class="flex gap-2">
-                            <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
-                            <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
+                            ${!p.resolved ? `
+                                <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
+                                <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
+                                <button onclick="flagConflict(${index})" class="btn-yellow text-white p-1 rounded-md">Flag Conflict</button>
+                                ${conflicts[index]?.length > 0 ? `<button onclick="resolveConflict(${index})" class="btn-red text-white p-1 rounded-md">Resolve Conflict</button>` : ''}
+                            ` : ''}
                         </div>
                     </div>
                     <div class="mt-2">
-                        <input type="text" id="commentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
+                        <input type="text" id="commentInput${index}" placeholder="Add a comment or resolution..." class="p-1 border rounded-md w-full input-field">
                         <button onclick="addComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
                         <ul class="mt-2 space-y-1">${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}</ul>
                     </div>
+                    ${conflicts[index]?.length > 0 ? `<p class="text-red-600 text-sm mt-2">Conflicts with: ${conflicts[index].map(i => `"${proposals[i].text}"`).join(', ')}</p>` : ''}
                 </div>
             `).join('');
             updateDashboard();
@@ -593,19 +659,24 @@
             const search = document.getElementById('proposalSearch').value.toLowerCase();
             const voteSection = document.getElementById('voteSection');
             voteSection.innerHTML = proposals.filter(p => p.text.toLowerCase().includes(search) || p.user.toLowerCase().includes(search)).map((p, index) => `
-                <div class="fade-in bg-gray-50 p-2 rounded-md">
+                <div class="fade-in bg-gray-50 p-2 rounded-md ${p.resolved ? 'opacity-50' : ''}">
                     <div class="flex items-center justify-between">
-                        <span>${p.text} by ${p.user} on ${p.timestamp}</span>
+                        <span>${p.text} by ${p.user} on ${p.timestamp} ${p.resolved ? '(Resolved: ' + p.resolution + ')' : ''}</span>
                         <div class="flex gap-2">
-                            <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
-                            <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-green-700">No</button>
+                            ${!p.resolved ? `
+                                <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
+                                <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
+                                <button onclick="flagConflict(${index})" class="btn-yellow text-white p-1 rounded-md">Flag Conflict</button>
+                                ${conflicts[index]?.length > 0 ? `<button onclick="resolveConflict(${index})" class="btn-red text-white p-1 rounded-md">Resolve Conflict</button>` : ''}
+                            ` : ''}
                         </div>
                     </div>
                     <div class="mt-2">
-                        <input type="text" id="commentInput${index}" placeholder="Add a comment..." class="p-1 border rounded-md w-full input-field">
+                        <input type="text" id="commentInput${index}" placeholder="Add a comment or resolution..." class="p-1 border rounded-md w-full input-field">
                         <button onclick="addComment(${index})" class="btn-blue text-white p-1 rounded-md mt-1">Comment</button>
                         <ul class="mt-2 space-y-1">${p.comments.map(c => `<li class="text-sm text-gray-600">${c.text} by ${c.user}</li>`).join('')}</ul>
                     </div>
+                    ${conflicts[index]?.length > 0 ? `<p class="text-red-600 text-sm mt-2">Conflicts with: ${conflicts[index].map(i => `"${proposals[i].text}"`).join(', ')}</p>` : ''}
                 </div>
             `).join('');
         }
@@ -626,7 +697,7 @@
         function vote(proposalIndex, choice) {
             if (!userProfile) { alert('Please set up your profile first.'); return; }
             if (!votes[proposalIndex]) votes[proposalIndex] = { yes: 0, no: 0, weightedYes: 0, weightedNo: 0, voters: [] };
-            if (!votes[proposalIndex].voters.includes(userProfile.name)) {
+            if (!votes[proposalIndex].voters.includes(userProfile.name) && !proposals[proposalIndex].resolved) {
                 votes[proposalIndex][choice]++;
                 votes[proposalIndex][`weighted${choice.charAt(0).toUpperCase() + choice.slice(1)}`] += userProfile.farmSize;
                 votes[proposalIndex].voters.push(userProfile.name);
@@ -638,7 +709,7 @@
                 localStorage.setItem('interactions', JSON.stringify(interactions));
                 updateVoteSection();
             } else {
-                alert('You have already voted on this proposal.');
+                alert('You have already voted or this proposal is resolved.');
             }
         }
 
@@ -683,8 +754,13 @@
             const recommendations = document.getElementById('recommendations');
             let recHTML = '<h3 class="text-lg font-semibold mb-2">Recommendations</h3>';
             proposals.forEach((p, i) => {
-                if (consensusData[i] > 75) { recHTML += `<p class="text-green-600">High Consensus: "${p.text}" has ${consensusData[i].toFixed(1)}% weighted support.</p>`; }
-                else if (votes[i]?.weightedYes > votes[i]?.weightedNo) { recHTML += `<p>Based on votes, "${p.text}" is recommended.</p>`; }
+                if (p.resolved) {
+                    recHTML += `<p class="text-gray-600">"${p.text}" resolved with: ${p.resolution}</p>`;
+                } else if (consensusData[i] > 75) {
+                    recHTML += `<p class="text-green-600">High Consensus: "${p.text}" has ${consensusData[i].toFixed(1)}% weighted support.</p>`;
+                } else if (votes[i]?.weightedYes > votes[i]?.weightedNo) {
+                    recHTML += `<p>Based on votes, "${p.text}" is recommended.</p>`;
+                }
             });
             recommendations.innerHTML = recHTML;
         }
