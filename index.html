@@ -38,7 +38,7 @@
         .tooltip { position: relative; display: inline-block; }
         .tooltip .tooltiptext { visibility: hidden; width: 140px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -70px; opacity: 0; transition: opacity 0.3s; }
         .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-        .collapsible { cursor: pointer; padding: 10px; background: #f9fafb; border-radius: 0.5rem; }
+        .collapsible { cursor: pointer; padding: 10px; background: #f9fafb; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
         .content { display: none; padding: 10px; }
         .progress-bar { background: #e5e7eb; border-radius: 0.5rem; height: 10px; }
         .progress-fill { background: #10b981; height: 100%; border-radius: 0.5rem; transition: width 0.3s; }
@@ -47,6 +47,27 @@
         .dark .card { border: 1px solid #4b5563; }
         .dark canvas { border-color: #4b5563; }
         .dark .progress-bar { background: #4b5563; }
+
+        /* Mobile-Specific Styles */
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .max-w-6xl { max-width: 100%; }
+            .text-4xl { font-size: 2rem; }
+            .text-xl { font-size: 1.25rem; }
+            .text-lg { font-size: 1rem; }
+            .p-6 { padding: 1rem; }
+            .mb-6 { margin-bottom: 1rem; }
+            .mt-8 { margin-top: 1rem; }
+            .flex.gap-2 { flex-direction: column; gap: 0.5rem; }
+            .input-field, button, select { font-size: 0.875rem; padding: 0.5rem; }
+            .btn-green, .btn-blue, .btn-purple, .btn-yellow, .btn-red { padding: 0.5rem; min-width: 48px; min-height: 48px; }
+            canvas { height: 12rem !important; }
+            .tooltip .tooltiptext { width: 100px; font-size: 0.75rem; margin-left: -50px; }
+            .notification { top: 5px; right: 5px; padding: 0.5rem; font-size: 0.875rem; }
+            .grid { grid-template-columns: 1fr !important; }
+            .collapsible i { font-size: 1.25rem; }
+            .card { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        }
     </style>
 </head>
 <body class="font-sans p-6 max-w-6xl mx-auto">
@@ -64,10 +85,10 @@
 
     <!-- Dashboard -->
     <div class="card p-6 mb-6 fade-in">
-        <div class="collapsible" onclick="toggleCollapse('dashboardContent')">
+        <div>
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</h2>
         </div>
-        <div id="dashboardContent" class="content">
+        <div id="dashboardContent">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div><p>Total Resources: <span id="dashResources">0</span></p></div>
                 <div><p>Active Proposals: <span id="dashProposals">0</span></p></div>
@@ -80,6 +101,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('instructionsContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-question-circle mr-2"></i>Instructions: What is CICFO & How to Use It</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="instructionsContent" class="content">
             <h3 class="text-lg font-semibold mb-2">What is CICFO?</h3>
@@ -102,6 +124,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('profileContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-user mr-2"></i>User Profile</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="profileContent" class="content">
             <p class="text-gray-600 mb-2">Set up your profile to participate in the collective.</p>
@@ -129,6 +152,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('resourceContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-seedling mr-2"></i>Resource Mapping</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="resourceContent" class="content">
             <p class="text-gray-600 mb-2">Share and view resource availability.</p>
@@ -163,6 +187,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('decisionContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-vote-yea mr-2"></i>Decision Dashboard</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="decisionContent" class="content">
             <p class="text-gray-600 mb-2">Propose, vote, and resolve conflicts on plans.</p>
@@ -191,6 +216,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('knowledgeContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-book mr-2"></i>Knowledge Hub</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="knowledgeContent" class="content">
             <p class="text-gray-600 mb-2">Share and learn practices.</p>
@@ -212,6 +238,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('challengesContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-trophy mr-2"></i>Challenges</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="challengesContent" class="content">
             <p class="text-gray-600 mb-2">Complete challenges for rewards!</p>
@@ -223,6 +250,7 @@
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('achievementsContent')">
             <h2 class="text-xl font-semibold mb-4"><i class="fas fa-award mr-2"></i>Achievements</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
         <div id="achievementsContent" class="content">
             <p class="text-gray-600 mb-2">Track your achievements and rewards.</p>
@@ -232,7 +260,7 @@
 
     <!-- Footer with Creator Credit -->
     <footer class="text-center mt-8">
-        <p>© 2025 CICFO | Built for a sustainable future by <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank" style="color: #059669;">Azeez Adewale Hamzat</a>
+        <p>© 2025 CICFO | Built for a sustainable future by <a href="https://www.linkedin.com/in/azeezhamzat" target="_blank" style="color: #059669;">Azeez Adewale Hamzat</a></p>
     </footer>
 
     <script>
@@ -432,22 +460,58 @@
         resourceChart = new Chart(resourceCtx, {
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Resource Quantity', data: [], backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 5 }] },
-            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+            options: { 
+                scales: { y: { beginAtZero: true } }, 
+                plugins: { legend: {}, tooltip: { enabled: true } }, 
+                animation: { duration: 1000, easing: 'easeInOutQuad' },
+                // Mobile-specific chart options
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { 
+                    x: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } }, 
+                    y: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } } 
+                }
+            }
         });
 
         const resourceTrendCtx = document.getElementById('resourceTrendChart').getContext('2d');
         resourceTrendChart = new Chart(resourceTrendCtx, {
             type: 'line',
             data: { labels: [], datasets: [] },
-            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+            options: { 
+                scales: { y: { beginAtZero: true } }, 
+                plugins: { legend: {}, tooltip: { enabled: true } }, 
+                animation: { duration: 1000, easing: 'easeInOutQuad' },
+                // Mobile-specific chart options
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { 
+                    x: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } }, 
+                    y: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } } 
+                }
+            }
         });
 
         const allocationCtx = document.getElementById('allocationChart').getContext('2d');
         allocationChart = new Chart(allocationCtx, {
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Suggested Allocation', data: [], backgroundColor: 'rgba(34, 197, 94, 0.7)', borderColor: 'rgba(34, 197, 94, 1)', borderWidth: 1, borderRadius: 5 }] },
-            options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+            options: { 
+                scales: { y: { beginAtZero: true } }, 
+                plugins: { legend: {}, tooltip: { enabled: true } }, 
+                animation: { duration: 1000, easing: 'easeInOutQuad' },
+                // Mobile-specific chart options
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { 
+                    x: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } }, 
+                    y: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } } 
+                }
+            }
         });
+
+        const voteCtx = document.getElementById('voteChart').getContext('2d');
+        const consensusCtx = document.getElementById('consensusChart').getContext('2d');
 
         // Update Resource Dropdown
         function updateResourceDropdown() {
@@ -718,7 +782,6 @@
             const resultsSection = document.getElementById('resultsSection');
             resultsSection.classList.remove('hidden');
 
-            const voteCtx = document.getElementById('voteChart').getContext('2d');
             if (voteChart) voteChart.destroy();
             const labels = proposals.map(p => p.text);
             const yesVotes = proposals.map((_, i) => votes[i]?.yes || 0);
@@ -736,10 +799,20 @@
                         { label: 'No Votes (Weighted)', data: weightedNoVotes, backgroundColor: 'rgba(239, 68, 68, 0.4)', borderColor: 'rgba(239, 68, 68, 1)', borderWidth: 1, borderRadius: 5 }
                     ]
                 },
-                options: { scales: { y: { beginAtZero: true } }, plugins: { legend: {}, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+                options: { 
+                    scales: { y: { beginAtZero: true } }, 
+                    plugins: { legend: {}, tooltip: { enabled: true } }, 
+                    animation: { duration: 1000, easing: 'easeInOutQuad' },
+                    // Mobile-specific chart options
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } }, 
+                        y: { ticks: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } } 
+                    }
+                }
             });
 
-            const consensusCtx = document.getElementById('consensusChart').getContext('2d');
             if (consensusChart) consensusChart.destroy();
             const consensusData = proposals.map((p, i) => {
                 const totalWeightedVotes = (votes[i]?.weightedYes || 0) + (votes[i]?.weightedNo || 0);
@@ -748,7 +821,16 @@
             consensusChart = new Chart(consensusCtx, {
                 type: 'pie',
                 data: { labels: proposals.map(p => p.text), datasets: [{ data: consensusData, backgroundColor: proposals.map(() => `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`), borderColor: '#ffffff', borderWidth: 1 }] },
-                options: { plugins: { legend: {}, tooltip: { enabled: true, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}% Consensus` } } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
+                options: { 
+                    plugins: { legend: {}, tooltip: { enabled: true, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}% Consensus` } } }, 
+                    animation: { duration: 1000, easing: 'easeInOutQuad' },
+                    // Mobile-specific chart options
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { labels: { font: { size: window.innerWidth <= 640 ? 10 : 14 } } }
+                    }
+                }
             });
 
             const recommendations = document.getElementById('recommendations');
@@ -919,7 +1001,13 @@
         // Toggle Collapsible Sections
         function toggleCollapse(contentId) {
             const content = document.getElementById(contentId);
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            const isExpanded = content.style.display === 'block';
+            content.style.display = isExpanded ? 'none' : 'block';
+            const chevron = content.previousElementSibling.querySelector('.fa-chevron-down');
+            if (chevron) {
+                chevron.classList.toggle('fa-chevron-down', isExpanded);
+                chevron.classList.toggle('fa-chevron-up', !isExpanded);
+            }
         }
 
         // Initialize on Load
@@ -938,7 +1026,13 @@
             updateChallenges();
             updateAchievements();
             updateResourceDropdown();
-            toggleCollapse('instructionsContent');
+            // On mobile, collapse all sections except Instructions by default
+            if (window.innerWidth <= 640) {
+                document.querySelectorAll('.content').forEach(content => content.style.display = 'none');
+                toggleCollapse('instructionsContent');
+            } else {
+                toggleCollapse('instructionsContent');
+            }
             console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
         };
     </script>
