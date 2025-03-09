@@ -48,18 +48,19 @@
         <p class="text-lg text-gray-600">Leveraging Collective Intelligence for Sustainable Cluster Farming</p>
     </header>
 
- <!-- Introduction -->
- <div class="card p-6 mb-6 fade-in">
-    <div>
-        <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-info-circle mr-2"></i>Welcome to CICFO</h2>
+    <!-- Introduction -->
+    <div class="card p-6 mb-6 fade-in">
+        <div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-info-circle mr-2"></i>Welcome to CICFO</h2>
+        </div>
+        <div id="introContent">
+            <p class="text-gray-600 mb-4">
+                CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
+            </p>
+            <p class="text-gray-600">Created by <a href="https://www.linkedin.com/in/azeezhamzat" style="color: #059669;" target="_blank"> Azeez Hamzat</a> for a sustainable future.</p>
+        </div>
     </div>
-    <div>
-        <p class="text-gray-600 mb-4">
-            CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
-        </p>
-        <p class="text-gray-600">Created by <a href="https://www.linkedin.com/in/azeezhamzat" style="color: #059669;" target="_blank"> Azeez Hamzat</a> for a sustainable future.</p>
-    </div>
-</div>
+
     <!-- Instructions -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('instructionsContent')">
@@ -68,12 +69,12 @@
         <div id="instructionsContent" class="content">
             <h3 class="text-lg font-semibold text-gray-800 mb-2">What is CICFO?</h3>
             <p class="text-gray-600 mb-4">
-                CICFO (Collective Intelligence for Cluster Farming) is a tool designed to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges—all from your browser, with no need for a server!
+                CICFO (Collective Intelligence for Cluster Farming) is a tool designed to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges
             </p>
             <h3 class="text-lg font-semibold text-gray-800 mb-2">How to Use CICFO</h3>
             <ul class="text-gray-600 space-y-2">
                 <li><strong>1. Set Up Your Profile:</strong> Enter your name and farm size in the "User Profile" section to join the collective. This unlocks all features and tracks your contributions.</li>
-                <li><strong>2. Map Resources:</strong> In "Resource Mapping," add resources (e.g., "Water, 50 units") to share what’s available. View charts and trends to spot patterns or shortages.</li>
+                <li><strong>2. Map Resources:</strong> In "Resource Mapping," type a resource (e.g., "Water," "Seeds," "Tractors") and its quantity. The dropdown is optional—select a category if it fits, or leave it blank to use your input as a new category. New categories are automatically added to the dropdown for future use. View charts and trends to spot patterns or shortages.</li>
                 <li><strong>3. Make Decisions:</strong> In "Decision Dashboard," propose plans (e.g., "Prioritize water for maize") and vote (weighted by farm size). Check results and consensus to agree on actions.</li>
                 <li><strong>4. Share Knowledge:</strong> In "Knowledge Hub," post tips or stories, upvote helpful ideas, and get personalized recommendations based on your interests.</li>
                 <li><strong>5. Earn Rewards:</strong> In "Challenges," complete tasks like posting tips or voting to earn points and badges. Track your progress in "User Profile."</li>
@@ -108,7 +109,6 @@
         </div>
     </div>
 
-
     <!-- Resource Mapping -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('resourceContent')">
@@ -117,8 +117,9 @@
         <div id="resourceContent" class="content">
             <p class="text-gray-600 mb-2">Share and view resource availability in your cluster.</p>
             <div class="flex gap-2 mb-4">
-                <input type="text" id="resourceInput" placeholder="Resource (e.g., Water)" class="p-2 border rounded-md w-full input-field">
+                <input type="text" id="resourceInput" placeholder="Resource (e.g., Water, Seeds)" class="p-2 border rounded-md w-full input-field">
                 <select id="resourceCategory" class="p-2 border rounded-md input-field">
+                    <option value="" selected>Optional Category</option>
                     <option value="Water">Water</option>
                     <option value="Fertilizer">Fertilizer</option>
                     <option value="Labor">Labor</option>
@@ -206,6 +207,7 @@
         let votes = JSON.parse(localStorage.getItem('votes')) || {};
         let knowledgePosts = JSON.parse(localStorage.getItem('knowledgePosts')) || [];
         let interactions = JSON.parse(localStorage.getItem('interactions')) || {};
+        let resourceCategories = JSON.parse(localStorage.getItem('resourceCategories')) || ["Water", "Fertilizer", "Labor", "Other"];
         let resourceChart = null;
         let resourceTrendChart = null;
         let voteChart = null;
@@ -247,6 +249,7 @@
                 votes = {};
                 knowledgePosts = [];
                 interactions = {};
+                resourceCategories = ["Water", "Fertilizer", "Labor", "Other"]; // Reset to default categories
                 initializeUserProfile();
                 updateResourceList();
                 updateResourceChart();
@@ -257,6 +260,7 @@
                 updateLeaderboard();
                 updateKnowledgeRecommendations();
                 updateChallenges();
+                updateResourceDropdown(); // Reset dropdown
                 document.getElementById('userName').value = '';
                 document.getElementById('farmSize').value = '';
                 showNotification('All data has been cleared. Start fresh!');
@@ -323,6 +327,13 @@
             options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } }, x: { ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
         });
 
+        // Update Resource Dropdown
+        function updateResourceDropdown() {
+            const categorySelect = document.getElementById('resourceCategory');
+            categorySelect.innerHTML = '<option value="" selected>Optional Category</option>' + 
+                resourceCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        }
+
         // Add Resource
         function addResource() {
             if (!userProfile) { alert('Please set up your profile before adding resources.'); return; }
@@ -330,11 +341,18 @@
             const categoryInput = document.getElementById('resourceCategory');
             const quantityInput = document.getElementById('quantityInput');
             const resource = resourceInput.value.trim();
-            const category = categoryInput.value;
+            const category = categoryInput.value || resource; // Use dropdown if selected, otherwise use input as category
             const quantity = parseInt(quantityInput.value);
             const timestamp = new Date().toLocaleDateString();
 
             if (resource && !isNaN(quantity) && quantity >= 0) {
+                // Add new category to dropdown if not already present
+                if (!resourceCategories.includes(category)) {
+                    resourceCategories.push(category);
+                    localStorage.setItem('resourceCategories', JSON.stringify(resourceCategories));
+                    updateResourceDropdown();
+                }
+
                 resources.push({ resource, category, quantity, user: userProfile.name, timestamp });
                 localStorage.setItem('resources', JSON.stringify(resources));
                 updateResourceList();
@@ -344,8 +362,9 @@
                 awardPoints(5, 'adding a resource');
                 resourceInput.value = '';
                 quantityInput.value = '';
+                categoryInput.value = ''; // Reset dropdown
             } else {
-                alert('Please enter a valid resource and quantity.');
+                alert('Please enter a valid resource name and quantity.');
             }
         }
 
@@ -648,6 +667,7 @@
             updateLeaderboard();
             updateKnowledgeRecommendations();
             updateChallenges();
+            updateResourceDropdown(); // Initialize dropdown with stored categories
             toggleCollapse('instructionsContent');
             console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
         };
