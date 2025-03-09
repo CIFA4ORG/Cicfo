@@ -25,6 +25,8 @@
         .btn-purple:hover { background: linear-gradient(45deg, #7e22ce, #9333ea); }
         .btn-yellow { background: linear-gradient(45deg, #f59e0b, #fbbf24); transition: background 0.3s; }
         .btn-yellow:hover { background: linear-gradient(45deg, #d97706, #f59e0b); }
+        .btn-red { background: linear-gradient(45deg, #ef4444, #f87171); transition: background 0.3s; }
+        .btn-red:hover { background: linear-gradient(45deg, #dc2626, #ef4444); }
         canvas { border-radius: 0.75rem; border: 1px solid #e5e7eb; }
         .tooltip { position: relative; display: inline-block; }
         .tooltip .tooltiptext { visibility: hidden; width: 140px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -70px; opacity: 0; transition: opacity 0.3s; }
@@ -46,6 +48,18 @@
         <p class="text-lg text-gray-600">Leveraging Collective Intelligence for Sustainable Cluster Farming</p>
     </header>
 
+ <!-- Introduction -->
+ <div class="card p-6 mb-6 fade-in">
+    <div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-info-circle mr-2"></i>Welcome to CICFO</h2>
+    </div>
+    <div>
+        <p class="text-gray-600 mb-4">
+            CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
+        </p>
+        <p class="text-gray-600">Created by <a href="https://www.linkedin.com/in/azeezhamzat" style="color: #059669;" target="_blank"> Azeez Hamzat</a> for a sustainable future.</p>
+    </div>
+</div>
     <!-- Instructions -->
     <div class="card p-6 mb-6 fade-in">
         <div class="collapsible" onclick="toggleCollapse('instructionsContent')">
@@ -54,7 +68,7 @@
         <div id="instructionsContent" class="content">
             <h3 class="text-lg font-semibold text-gray-800 mb-2">What is CICFO?</h3>
             <p class="text-gray-600 mb-4">
-                CICFO (Collective Intelligence for Cluster Farming) is a tool designed to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges.
+                CICFO (Collective Intelligence for Cluster Farming) is a tool designed to help farming communities work together to manage resources like water, fertilizers, and labor. By sharing data, voting on plans, and exchanging knowledge, you can make smarter decisions, improve sustainability, and build resilience against climate and market challenges—all from your browser, with no need for a server!
             </p>
             <h3 class="text-lg font-semibold text-gray-800 mb-2">How to Use CICFO</h3>
             <ul class="text-gray-600 space-y-2">
@@ -63,6 +77,7 @@
                 <li><strong>3. Make Decisions:</strong> In "Decision Dashboard," propose plans (e.g., "Prioritize water for maize") and vote (weighted by farm size). Check results and consensus to agree on actions.</li>
                 <li><strong>4. Share Knowledge:</strong> In "Knowledge Hub," post tips or stories, upvote helpful ideas, and get personalized recommendations based on your interests.</li>
                 <li><strong>5. Earn Rewards:</strong> In "Challenges," complete tasks like posting tips or voting to earn points and badges. Track your progress in "User Profile."</li>
+                <li><strong>6. Clear Data (Optional):</strong> In "User Profile," use the "Clear Data" button to reset all data if you want to start fresh. Confirm carefully—this can’t be undone!</li>
                 <li><strong>Tip:</strong> Click section headers to expand/collapse them. Your data saves in your browser, so it’s always there when you return!</li>
             </ul>
         </div>
@@ -89,21 +104,10 @@
                 <p id="progressText" class="text-sm text-gray-500 mt-1"></p>
             </div>
             <div id="badges" class="mt-4 flex gap-2"></div>
+            <button onclick="clearData()" class="btn-red text-white p-2 rounded-md mt-4 tooltip">Clear Data<span class="tooltiptext">Reset all data and start fresh</span></button>
         </div>
     </div>
 
-    <!-- Introduction -->
-    <div class="card p-6 mb-6 fade-in">
-        <div class="collapsible" onclick="toggleCollapse('introContent')">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-info-circle mr-2"></i>Welcome to CICFO</h2>
-        </div>
-        <div id="introContent" class="content">
-            <p class="text-gray-600 mb-4">
-                CICFO empowers farming clusters to optimize scarce resources (water, fertilizers, labor) using collective intelligence. Together, we promote sustainability and resilience against climate and market challenges.
-            </p>
-            <p class="text-gray-600">Created by <a href="https://www.linkedin.com/in/azeezhamzat" style="color: #059669;" target="_blank"> Azeez Hamzat</a> for a sustainable future.</p>
-        </div>
-    </div>
 
     <!-- Resource Mapping -->
     <div class="card p-6 mb-6 fade-in">
@@ -201,7 +205,7 @@
         let proposals = JSON.parse(localStorage.getItem('proposals')) || [];
         let votes = JSON.parse(localStorage.getItem('votes')) || {};
         let knowledgePosts = JSON.parse(localStorage.getItem('knowledgePosts')) || [];
-        let interactions = JSON.parse(localStorage.getItem('interactions')) || {}; // For collaborative filtering
+        let interactions = JSON.parse(localStorage.getItem('interactions')) || {};
         let resourceChart = null;
         let resourceTrendChart = null;
         let voteChart = null;
@@ -233,12 +237,38 @@
             }
         }
 
+        // Clear All Data
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data? This will reset your profile, resources, proposals, votes, and knowledge posts. This action cannot be undone.')) {
+                localStorage.clear();
+                userProfile = null;
+                resources = [];
+                proposals = [];
+                votes = {};
+                knowledgePosts = [];
+                interactions = {};
+                initializeUserProfile();
+                updateResourceList();
+                updateResourceChart();
+                updateResourceStats();
+                updateResourceTrends();
+                updateVoteSection();
+                updateKnowledgeFeed();
+                updateLeaderboard();
+                updateKnowledgeRecommendations();
+                updateChallenges();
+                document.getElementById('userName').value = '';
+                document.getElementById('farmSize').value = '';
+                showNotification('All data has been cleared. Start fresh!');
+            }
+        }
+
         // Update User Progress
         function updateUserProgress() {
             if (!userProfile) return;
             const progressFill = document.getElementById('progressFill');
             const progressText = document.getElementById('progressText');
-            const progress = Math.min((userProfile.points / 100) * 100, 100); // Max 100 points for progress bar
+            const progress = Math.min((userProfile.points / 100) * 100, 100);
             progressFill.style.width = `${progress}%`;
             progressText.textContent = `Points: ${userProfile.points} (Next badge at 100 points)`;
         }
@@ -251,7 +281,7 @@
             if (userProfile.points >= 50) userProfile.badges.push('Resource Guru');
             if (userProfile.points >= 75) userProfile.badges.push('Decision Maker');
             if (userProfile.points >= 100) userProfile.badges.push('Knowledge Master');
-            userProfile.badges = [...new Set(userProfile.badges)]; // Remove duplicates
+            userProfile.badges = [...new Set(userProfile.badges)];
             userProfile.badges.forEach(badge => {
                 badgeHTML += `<span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-md text-sm"><i class="fas fa-medal mr-1"></i>${badge}</span>`;
             });
@@ -281,45 +311,21 @@
         const resourceCtx = document.getElementById('resourceChart').getContext('2d');
         resourceChart = new Chart(resourceCtx, {
             type: 'bar',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Resource Quantity',
-                    data: [],
-                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                    borderColor: 'rgba(16, 185, 129, 1)',
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } },
-                plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } },
-                animation: { duration: 1000, easing: 'easeInOutQuad' }
-            }
+            data: { labels: [], datasets: [{ label: 'Resource Quantity', data: [], backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 5 }] },
+            options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
         });
 
         // Initialize Resource Trend Chart
         const resourceTrendCtx = document.getElementById('resourceTrendChart').getContext('2d');
         resourceTrendChart = new Chart(resourceTrendCtx, {
             type: 'line',
-            data: {
-                labels: [],
-                datasets: []
-            },
-            options: {
-                scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } }, x: { ticks: { color: '#1f2937' } } },
-                plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } },
-                animation: { duration: 1000, easing: 'easeInOutQuad' }
-            }
+            data: { labels: [], datasets: [] },
+            options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } }, x: { ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
         });
 
         // Add Resource
         function addResource() {
-            if (!userProfile) {
-                alert('Please set up your profile before adding resources.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before adding resources.'); return; }
             const resourceInput = document.getElementById('resourceInput');
             const categoryInput = document.getElementById('resourceCategory');
             const quantityInput = document.getElementById('quantityInput');
@@ -354,10 +360,7 @@
 
         function updateResourceChart() {
             const categories = [...new Set(resources.map(r => r.category))];
-            const dataByCategory = categories.map(cat => {
-                return resources.filter(r => r.category === cat).reduce((sum, r) => sum + r.quantity, 0);
-            });
-
+            const dataByCategory = categories.map(cat => resources.filter(r => r.category === cat).reduce((sum, r) => sum + r.quantity, 0));
             resourceChart.data.labels = categories;
             resourceChart.data.datasets[0].data = dataByCategory;
             resourceChart.update();
@@ -366,17 +369,10 @@
         function updateResourceStats() {
             const resourceStats = document.getElementById('resourceStats');
             const totalResources = resources.reduce((sum, r) => sum + r.quantity, 0);
-            const resourcesByCategory = resources.reduce((acc, r) => {
-                acc[r.category] = (acc[r.category] || 0) + r.quantity;
-                return acc;
-            }, {});
+            const resourcesByCategory = resources.reduce((acc, r) => { acc[r.category] = (acc[r.category] || 0) + r.quantity; return acc; }, {});
             let statsHTML = `<p>Total Resources: ${totalResources}</p>`;
-            for (const [cat, qty] of Object.entries(resourcesByCategory)) {
-                statsHTML += `<p>${cat}: ${qty}</p>`;
-            }
-            if (resourcesByCategory['Water'] < 100) {
-                statsHTML += `<p class="text-red-600">Alert: Water levels are critically low!</p>`;
-            }
+            for (const [cat, qty] of Object.entries(resourcesByCategory)) { statsHTML += `<p>${cat}: ${qty}</p>`; }
+            if (resourcesByCategory['Water'] < 100) { statsHTML += `<p class="text-red-600">Alert: Water levels are critically low!</p>`; }
             resourceStats.innerHTML = statsHTML;
         }
 
@@ -384,17 +380,9 @@
             const dates = [...new Set(resources.map(r => r.timestamp))].sort();
             const categories = [...new Set(resources.map(r => r.category))];
             const datasets = categories.map(cat => {
-                const data = dates.map(date => {
-                    return resources.filter(r => r.category === cat && r.timestamp === date).reduce((sum, r) => sum + r.quantity, 0);
-                });
-                return {
-                    label: cat,
-                    data,
-                    borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
-                    fill: false
-                };
+                const data = dates.map(date => resources.filter(r => r.category === cat && r.timestamp === date).reduce((sum, r) => sum + r.quantity, 0));
+                return { label: cat, data, borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`, fill: false };
             });
-
             resourceTrendChart.data.labels = dates;
             resourceTrendChart.data.datasets = datasets;
             resourceTrendChart.update();
@@ -402,10 +390,7 @@
 
         // Propose Plan
         function proposePlan() {
-            if (!userProfile) {
-                alert('Please set up your profile before proposing plans.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before proposing plans.'); return; }
             const proposalInput = document.getElementById('proposalInput');
             const proposal = proposalInput.value.trim();
             const timestamp = new Date().toLocaleDateString();
@@ -430,7 +415,7 @@
                         <span>${p.text} by ${p.user} on ${p.timestamp}</span>
                         <div class="flex gap-2">
                             <button onclick="vote(${index}, 'yes')" class="bg-green-600 text-white p-1 rounded-md hover:bg-green-700">Yes</button>
-                            <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-green-700">No</button>
+                            <button onclick="vote(${index}, 'no')" class="bg-red-600 text-white p-1 rounded-md hover:bg-red-700">No</button>
                         </div>
                     </div>
                     <div class="mt-2">
@@ -445,10 +430,7 @@
         }
 
         function addComment(proposalIndex) {
-            if (!userProfile) {
-                alert('Please set up your profile before commenting.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before commenting.'); return; }
             const commentInput = document.getElementById(`commentInput${proposalIndex}`);
             const commentText = commentInput.value.trim();
             if (commentText) {
@@ -461,10 +443,7 @@
         }
 
         function vote(proposalIndex, choice) {
-            if (!userProfile) {
-                alert('Please set up your profile before voting.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before voting.'); return; }
             if (!votes[proposalIndex]) votes[proposalIndex] = { yes: 0, no: 0, weightedYes: 0, weightedNo: 0, voters: [] };
             if (!votes[proposalIndex].voters.includes(userProfile.name)) {
                 votes[proposalIndex][choice]++;
@@ -482,11 +461,7 @@
         }
 
         function viewResults() {
-            if (proposals.length === 0) {
-                alert('No proposals to display results for.');
-                return;
-            }
-
+            if (proposals.length === 0) { alert('No proposals to display results for.'); return; }
             const resultsSection = document.getElementById('resultsSection');
             resultsSection.classList.remove('hidden');
 
@@ -504,48 +479,15 @@
                 data: {
                     labels,
                     datasets: [
-                        {
-                            label: 'Yes Votes (Raw)',
-                            data: yesVotes,
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5
-                        },
-                        {
-                            label: 'No Votes (Raw)',
-                            data: noVotes,
-                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5
-                        },
-                        {
-                            label: 'Yes Votes (Weighted)',
-                            data: weightedYesVotes,
-                            backgroundColor: 'rgba(16, 185, 129, 0.4)',
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5
-                        },
-                        {
-                            label: 'No Votes (Weighted)',
-                            data: weightedNoVotes,
-                            backgroundColor: 'rgba(239, 68, 68, 0.4)',
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5
-                        }
+                        { label: 'Yes Votes (Raw)', data: yesVotes, backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 5 },
+                        { label: 'No Votes (Raw)', data: noVotes, backgroundColor: 'rgba(239, 68, 68, 0.7)', borderColor: 'rgba(239, 68, 68, 1)', borderWidth: 1, borderRadius: 5 },
+                        { label: 'Yes Votes (Weighted)', data: weightedYesVotes, backgroundColor: 'rgba(16, 185, 129, 0.4)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 5 },
+                        { label: 'No Votes (Weighted)', data: weightedNoVotes, backgroundColor: 'rgba(239, 68, 68, 0.4)', borderColor: 'rgba(239, 68, 68, 1)', borderWidth: 1, borderRadius: 5 }
                     ]
                 },
-                options: {
-                    scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } },
-                    plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } },
-                    animation: { duration: 1000, easing: 'easeInOutQuad' }
-                }
+                options: { scales: { y: { beginAtZero: true, ticks: { color: '#1f2937' } } }, plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
             });
 
-            // Consensus Analysis
             const consensusCtx = document.getElementById('consensusChart').getContext('2d');
             if (consensusChart) consensusChart.destroy();
 
@@ -556,40 +498,22 @@
 
             consensusChart = new Chart(consensusCtx, {
                 type: 'pie',
-                data: {
-                    labels: proposals.map(p => p.text),
-                    datasets: [{
-                        data: consensusData,
-                        backgroundColor: proposals.map(() => `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`),
-                        borderColor: '#ffffff',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}% Consensus` } } },
-                    animation: { duration: 1000, easing: 'easeInOutQuad' }
-                }
+                data: { labels: proposals.map(p => p.text), datasets: [{ data: consensusData, backgroundColor: proposals.map(() => `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`), borderColor: '#ffffff', borderWidth: 1 }] },
+                options: { plugins: { legend: { labels: { color: '#1f2937' } }, tooltip: { enabled: true, callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toFixed(1)}% Consensus` } } }, animation: { duration: 1000, easing: 'easeInOutQuad' } }
             });
 
-            // Simple Recommendation System
             const recommendations = document.getElementById('recommendations');
             let recHTML = '<h3 class="text-lg font-semibold text-gray-800 mb-2">Recommendations</h3>';
             proposals.forEach((p, i) => {
-                if (consensusData[i] > 75) {
-                    recHTML += `<p class="text-green-600">High Consensus: "${p.text}" has ${consensusData[i].toFixed(1)}% weighted support. Consider adopting.</p>`;
-                } else if (votes[i]?.weightedYes > votes[i]?.weightedNo) {
-                    recHTML += `<p>Based on weighted votes, "${p.text}" is recommended for adoption.</p>`;
-                }
+                if (consensusData[i] > 75) { recHTML += `<p class="text-green-600">High Consensus: "${p.text}" has ${consensusData[i].toFixed(1)}% weighted support. Consider adopting.</p>`; }
+                else if (votes[i]?.weightedYes > votes[i]?.weightedNo) { recHTML += `<p>Based on weighted votes, "${p.text}" is recommended for adoption.</p>`; }
             });
             recommendations.innerHTML = recHTML;
         }
 
         // Post Knowledge
         function postKnowledge() {
-            if (!userProfile) {
-                alert('Please set up your profile before posting knowledge.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before posting knowledge.'); return; }
             const knowledgeInput = document.getElementById('knowledgeInput');
             const post = knowledgeInput.value.trim();
             const timestamp = new Date().toLocaleDateString();
@@ -629,10 +553,7 @@
         }
 
         function upvoteKnowledge(postIndex) {
-            if (!userProfile) {
-                alert('Please set up your profile before upvoting.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before upvoting.'); return; }
             if (!userProfile.upvotedPosts.includes(postIndex)) {
                 knowledgePosts[postIndex].upvotes++;
                 userProfile.upvotedPosts.push(postIndex);
@@ -651,10 +572,7 @@
         }
 
         function addKnowledgeComment(postIndex) {
-            if (!userProfile) {
-                alert('Please set up your profile before commenting.');
-                return;
-            }
+            if (!userProfile) { alert('Please set up your profile before commenting.'); return; }
             const commentInput = document.getElementById(`knowledgeCommentInput${postIndex}`);
             const commentText = commentInput.value.trim();
             if (commentText) {
@@ -688,20 +606,10 @@
             if (!userProfile) return;
             const recommendations = document.getElementById('knowledgeRecommendations');
             let recHTML = '<h3 class="text-lg font-semibold text-gray-800 mb-2">Recommended Posts</h3>';
-            
-            const similarUsers = Object.entries(interactions).filter(([user, data]) => {
-                return user !== userProfile.name && data.posts.some(post => userProfile.upvotedPosts.includes(post));
-            }).map(([user]) => user);
-
-            const recommendedPosts = knowledgePosts.filter(p => {
-                return similarUsers.some(user => interactions[user]?.posts.includes(p.id)) && !userProfile.upvotedPosts.includes(p.id);
-            });
-
-            if (recommendedPosts.length > 0) {
-                recHTML += recommendedPosts.slice(0, 3).map(p => `<p class="text-gray-600">"${p.post}" by ${p.user} (Upvotes: ${p.upvotes})</p>`).join('');
-            } else {
-                recHTML += '<p class="text-gray-600">No recommendations yet. Upvote posts to get personalized suggestions!</p>';
-            }
+            const similarUsers = Object.entries(interactions).filter(([user, data]) => user !== userProfile.name && data.posts.some(post => userProfile.upvotedPosts.includes(post))).map(([user]) => user);
+            const recommendedPosts = knowledgePosts.filter(p => similarUsers.some(user => interactions[user]?.posts.includes(p.id)) && !userProfile.upvotedPosts.includes(p.id));
+            if (recommendedPosts.length > 0) { recHTML += recommendedPosts.slice(0, 3).map(p => `<p class="text-gray-600">"${p.post}" by ${p.user} (Upvotes: ${p.upvotes})</p>`).join(''); }
+            else { recHTML += '<p class="text-gray-600">No recommendations yet. Upvote posts to get personalized suggestions!</p>'; }
             recommendations.innerHTML = recHTML;
         }
 
@@ -740,7 +648,7 @@
             updateLeaderboard();
             updateKnowledgeRecommendations();
             updateChallenges();
-            toggleCollapse('instructionsContent'); // Open instructions by default on first load
+            toggleCollapse('instructionsContent');
             console.log("CICFO platform initialized at 08:14 PM +00, March 08, 2025");
         };
     </script>
